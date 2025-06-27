@@ -31,13 +31,13 @@ const safetySettings = [
 
 // Initialize text-only model
 export const textModel = genAI.getGenerativeModel({
-  model: 'gemini-pro',
+  model: 'gemini-2.5-flash',
   safetySettings,
 });
 
 // Initialize multimodal model for text + images
 export const visionModel = genAI.getGenerativeModel({
-  model: 'gemini-pro-vision',
+  model: 'gemini-2.5-flash-vision',
   safetySettings,
 });
 
