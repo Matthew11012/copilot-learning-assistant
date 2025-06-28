@@ -130,7 +130,7 @@ export default function Home() {
         {/* Chat area */}
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4" style={{ scrollBehavior: 'smooth' }}>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <h2 className="text-2xl font-semibold mb-2">Welcome to Copilot Learning Assistant</h2>

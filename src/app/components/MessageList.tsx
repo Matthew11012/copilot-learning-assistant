@@ -13,7 +13,15 @@ export default function MessageList({ messages }: MessageListProps) {
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Use a small timeout to ensure DOM updates are complete
+    const scrollTimeout = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end'  // Ensure it scrolls to the end
+      });
+    }, 100);
+    
+    return () => clearTimeout(scrollTimeout);
   }, [messages]);
 
   return (
