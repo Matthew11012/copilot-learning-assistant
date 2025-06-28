@@ -2,6 +2,7 @@
 
 import { Message } from '../types';
 import Image from 'next/image';
+import MathRenderer from './MathRenderer';
 
 interface MessageBubbleProps {
   message: Message;
@@ -32,13 +33,19 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         )}
         
-        {/* Message content with markdown formatting */}
+        {/* Message content with math rendering */}
         <div className="whitespace-pre-wrap">
-          {message.content.split('\n').map((line, i) => (
-            <p key={i} className={i > 0 ? 'mt-2' : ''}>
-              {line}
-            </p>
-          ))}
+          {isUser ? (
+            // For user messages, just display the text as is
+            message.content.split('\n').map((line, i) => (
+              <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                {line}
+              </p>
+            ))
+          ) : (
+            // For assistant messages, use the MathRenderer
+            <MathRenderer content={message.content} />
+          )}
         </div>
         
         {/* Timestamp */}
