@@ -14,20 +14,20 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Maximum file size 3MB
-  const MAX_FILE_SIZE = 3 * 1024 * 1024; 
+  
+  // Maximum file size (3MB)
+  const MAX_FILE_SIZE = 3 * 1024 * 1024;
   
   // Handle file drop
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
     maxFiles: 1,
     maxSize: MAX_FILE_SIZE,
     onDrop: (acceptedFiles, rejectedFiles) => {
-      // Handle rejected files (too large, wrong type, etc.)
       if (rejectedFiles.length > 0) {
         const rejection = rejectedFiles[0];
         if (rejection.file.size > MAX_FILE_SIZE) {
@@ -42,7 +42,6 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
       const file = acceptedFiles[0];
       setImageFile(file);
       
-      // Create a preview URL
       const objectUrl = URL.createObjectURL(file);
       setImagePreview(objectUrl);
     },
@@ -56,13 +55,11 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     setMessage('');
     setImageFile(null);
     
-    // Revoke the object URL to avoid memory leaks
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
       setImagePreview(null);
     }
     
-    // Focus input after sending
     setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
@@ -78,99 +75,152 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   
   // Remove image
   const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImageFile(null);
     setImagePreview(null);
     setImageError(null);
   };
   
+  // Auto-resize textarea
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Auto-resize
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+  };
+  
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Image error message */}
       {imageError && (
-        <div className="text-red-500 text-sm">{imageError}</div>
+        <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 rounded-lg p-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {imageError}
+        </div>
       )}
       
       {/* Image preview */}
       {imagePreview && (
-        <div className="relative inline-block">
-          <Image
-            src={imagePreview}
-            alt="Image preview"
-            width={100}
-            height={100}
-            className="rounded-md object-cover"
-          />
-          <button
-            onClick={handleRemoveImage}
-            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-            aria-label="Remove image"
-          >
-            ×
-          </button>
+        <div className="flex items-start gap-3 bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+          <div className="relative">
+            <Image
+              src={imagePreview}
+              alt="Image preview"
+              width={60}
+              height={60}
+              className="rounded-lg object-cover"
+            />
+            <button
+              onClick={handleRemoveImage}
+              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs transition-colors"
+              aria-label="Remove image"
+            >
+              ×
+            </button>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-300">Image attached</p>
+            <p className="text-xs text-gray-500 truncate">{imageFile?.name}</p>
+          </div>
         </div>
       )}
       
-      <div className="flex items-end gap-2">
-        {/* Image upload button */}
-        <div
-          {...getRootProps()}
-          className="flex-shrink-0 cursor-pointer p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-        >
-          <input {...getInputProps()} />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6 text-gray-500 dark:text-gray-400"
+      <div 
+        className={`relative bg-gray-800/80 backdrop-blur-sm rounded-2xl border transition-all duration-200 ${
+          isFocused || isDragActive
+            ? 'border-blue-500/50 shadow-lg shadow-blue-500/10' 
+            : 'border-gray-600/50'
+        } ${isDragActive ? 'bg-blue-500/5' : ''}`}
+      >
+        {/* Drag overlay */}
+        {isDragActive && (
+          <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-500/50 rounded-2xl flex items-center justify-center z-10">
+            <div className="text-center">
+              <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p className="text-blue-400 text-sm font-medium">Drop your image here</p>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex items-center gap-3 p-4">
+          {/* Image upload button */}
+          <div
+            {...getRootProps()}
+            className="flex-shrink-0 cursor-pointer p-2 rounded-xl hover:bg-gray-700/50 transition-colors group"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-            />
-          </svg>
-        </div>
-        
-        {/* Message input */}
-        <textarea
-          ref={inputRef}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Tanyakan sesuatu tentang pelajaran Anda..."
-          className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-          rows={1}
-          disabled={isLoading}
-        />
-        
-        {/* Send button */}
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading || (!message.trim() && !imageFile)}
-          className="flex-shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
+            <input {...getInputProps()} />
             <svg
-              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 text-gray-400 group-hover:text-gray-300 transition-colors"
               fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
               stroke="currentColor"
-              className="w-6 h-6"
+              viewBox="0 0 24 24"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                strokeWidth={2}
+                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
               />
             </svg>
-          )}
-        </button>
+          </div>
+          
+          {/* Message input */}
+          <textarea
+            ref={inputRef}
+            value={message}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder="Ask me anything about your studies..."
+            className="flex-1 bg-transparent text-white placeholder-gray-400 border-none outline-none resize-none min-h-[24px] max-h-[120px] py-0"
+            rows={1}
+            disabled={isLoading}
+          />
+          
+          {/* Send button */}
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading || (!message.trim() && !imageFile)}
+            className={`flex-shrink-0 p-2 rounded-xl transition-all duration-200 ${
+              isLoading || (!message.trim() && !imageFile)
+                ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105'
+            }`}
+          >
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
+      
+      {/* Helper text */}
+      <p className="text-xs text-gray-500 text-center">
+        Press Enter to send • Shift + Enter for new line • Drag & drop images
+      </p>
     </div>
   );
 }
