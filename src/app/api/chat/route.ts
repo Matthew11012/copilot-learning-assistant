@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
       answer = `I'm having trouble processing your request at the moment. Here are some learning materials that might help with your query about "${message}".`;
     }
 
-    // Save assistant response
-    saveDummyMessage(currentChatId, 'assistant', answer);
+    // Save assistant response WITH recommendations
+    saveDummyMessage(currentChatId, 'assistant', answer, undefined, relevantMaterials);
 
     // Return response with recommendations
     return NextResponse.json({

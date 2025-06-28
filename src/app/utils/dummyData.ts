@@ -152,7 +152,7 @@ export function searchDummyMaterials(query: string, limit = 4): Material[] {
       topic: material.topic.toLowerCase()
     };
     
-    console.log(`\nEvaluating: ${material.title}`);
+    // console.log(`\nEvaluating: ${material.title}`);
     
     // HIGHEST PRIORITY: Direct topic match
     subjectKeywords.forEach(keyword => {
@@ -220,7 +220,7 @@ function extractSubjectKeywords(query: string): string[] {
     'ekonomi': ['ekonomi', 'economy', 'mikro', 'makro', 'perdagangan', 'pasar', 'uang'],
     'statistika': ['statistik', 'statistic', 'probabilitas', 'probability', 'data', 'sampel'],
     'fisika': ['fisika', 'physics', 'mekanika', 'gaya', 'gerak', 'energi', 'momentum'],
-    'pemrograman': ['pemrograman', 'programming', 'python', 'coding', 'code', 'script']
+    'pemrograman': ['pemrograman', 'programming', 'python', 'coding', 'code', 'script', 'koding']
   };
   
   const foundSubjects: string[] = [];
@@ -271,13 +271,14 @@ export function createDummyChat(userId: string | undefined, title: string): Chat
 }
 
 // Save a message
-export function saveDummyMessage(chatId: string, role: 'user' | 'assistant', content: string, imageUrl?: string): Message {
+export function saveDummyMessage(chatId: string, role: 'user' | 'assistant', content: string, imageUrl?: string, recommendations?: Material[]): Message {
   const newMessage: Message = {
     id: uuidv4(),
     chatId,
     role,
     content,
     imageUrl,
+    recommendations: [],
     createdAt: new Date()
   };
   

@@ -16,7 +16,6 @@ export default function Home() {
   // State for chat
   const [chatId, setChatId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [recommendations, setRecommendations] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,13 +92,11 @@ export default function Home() {
         chatId,
         role: 'assistant',
         content: data.answer,
+        recommendations: data.recommendations,
         createdAt: new Date()
       };
       
       setMessages(prev => [...prev, assistantMessage]);
-      
-      // Update recommendations
-      setRecommendations(data.recommendations || []);
       
     } catch (err) {
       console.error('Error sending message:', err);
@@ -147,16 +144,6 @@ export default function Home() {
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 text-sm">
               {error}
-            </div>
-          )}
-
-          {/* Recommendations */}
-          {recommendations.length > 0 && (
-            <div className="p-4 bg-gray-100 dark:bg-gray-800">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Recommended Learning Materials
-              </h3>
-              <RecommendationsCarousel materials={recommendations} />
             </div>
           )}
 
