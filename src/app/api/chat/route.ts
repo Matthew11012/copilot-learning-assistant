@@ -30,10 +30,19 @@ export async function POST(request: NextRequest) {
     // Generate response based on whether an image was provided
     let answer: string;
     
-    if (imageUrl) {
-      answer = await generateMultimodalResponse(message, imageUrl, materialsContext);
-    } else {
-      answer = await generateTextResponse(message, materialsContext);
+    try {
+      if (imageUrl) {
+        console.log('Processing request with image');
+        answer = await generateMultimodalResponse(message, imageUrl, materialsContext);
+      } else {
+        console.log('Processing text-only request');
+        answer = await generateTextResponse(message, materialsContext);
+      }
+    } catch (error) {
+      console.error('Error generating response:', error);
+      
+      // Fallback response
+      answer = `I'm having trouble processing your request at the moment. Here are some learning materials that might help with your query about "${message}".`;
     }
 
     // Save assistant response

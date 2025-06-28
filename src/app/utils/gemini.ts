@@ -29,17 +29,12 @@ const safetySettings = [
   },
 ];
 
-// Initialize text-only model
-export const textModel = genAI.getGenerativeModel({
+// Initialize model
+export const Model = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
   safetySettings,
 });
 
-// Initialize multimodal model for text + images
-export const visionModel = genAI.getGenerativeModel({
-  model: 'gemini-2.5-flash-vision',
-  safetySettings,
-});
 
 // Function to generate chat response with text only
 export async function generateTextResponse(prompt: string, context?: string) {
@@ -49,7 +44,7 @@ export async function generateTextResponse(prompt: string, context?: string) {
       ? `${prompt}\n\nHere are some relevant materials that might help:\n${context}`
       : prompt;
       
-    const result = await textModel.generateContent(fullPrompt);
+    const result = await Model.generateContent(fullPrompt);
     const response = await result.response;
     return response.text();
   } catch (error) {
@@ -65,6 +60,7 @@ export async function generateMultimodalResponse(prompt: string, imageUrl: strin
     const fullPrompt = context 
       ? `${prompt}\n\nHere are some relevant materials that might help:\n${context}`
       : prompt;
+    console.log("Sending multimodal prompt to Gemini");
 
     const imageParts = [
       {
@@ -77,7 +73,7 @@ export async function generateMultimodalResponse(prompt: string, imageUrl: strin
     
     const textPart = { text: fullPrompt };
     
-    const result = await visionModel.generateContent([...imageParts, textPart]);
+    const result = await Model.generateContent([...imageParts, textPart]);
     const response = await result.response;
     return response.text();
   } catch (error) {

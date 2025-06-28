@@ -10,6 +10,7 @@ import Image from 'next/image';
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
 import RecommendationsCarousel from './components/RecommendationsCarousel';
+import { compressImage, fileToBase64 } from './utils/imageProcessing';
 
 export default function Home() {
   // State for chat
@@ -44,16 +45,28 @@ export default function Home() {
         createdAt: new Date()
       };
       
-      // Add user message to state
-      setMessages(prev => [...prev, userMessage]);
-      
-      // Prepare request data
+      // Process image if present
       let imageUrl = '';
       if (imageFile) {
-        // In a real app, we would upload the image here
-        // For now, we'll use a fake URL
-        imageUrl = URL.createObjectURL(imageFile);
+        try {
+          // Compress the image
+          const compressedImage = await compressImage(imageFile);
+          
+          // Convert to base64 for preview and API
+          imageUrl = await fileToBase64(compressedImage);
+          
+          // Add the image URL to the user message
+          userMessage.imageUrl = imageUrl;
+        } catch (err) {
+          console.error('Error processing image:', err);
+          setError('Failed to process image. Please try again with a different image.');
+          setIsLoading(false);
+          return;
+        }
       }
+      
+      // Add user message to state
+      setMessages(prev => [...prev, userMessage]);
       
       // Send message to API
       const response = await fetch('/api/chat', {
