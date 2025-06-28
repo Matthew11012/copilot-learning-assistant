@@ -25,7 +25,7 @@ export default function MessageList({ messages }: MessageListProps) {
   }, [messages]);
 
   return (
-    <div className="space-y-4">
+    <div className="w-full">
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}

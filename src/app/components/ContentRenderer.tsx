@@ -14,29 +14,29 @@ interface ContentRendererProps {
 
 export default function ContentRenderer({ content, className = '' }: ContentRendererProps) {
   return (
-    <div className={`prose prose-sm max-w-none ${className}`}>
+    <div className={`prose prose-lg max-w-none text-gray-100 ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
           // Custom components for better styling
           h1: ({ children }) => (
-            <h1 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold mb-4 text-gray-100">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-semibold mb-3 text-gray-100">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-base font-semibold mb-2 text-gray-900 dark:text-white">
+            <h3 className="text-xl font-semibold mb-3 text-gray-100">
               {children}
             </h3>
           ),
           p: ({ children }) => (
-            <p className="mb-3 text-gray-800 dark:text-gray-200 leading-relaxed">
+            <p className="mb-4 text-gray-100 leading-relaxed text-lg">
               {children}
             </p>
           ),
