@@ -13,7 +13,11 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   const [message, setMessage] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Maximum file size 3MB
+  const MAX_FILE_SIZE = 3 * 1024 * 1024; 
   
   // Handle file drop
   const { getRootProps, getInputProps } = useDropzone({
@@ -21,10 +25,26 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
+    maxSize: MAX_FILE_SIZE,
+    onDrop: (acceptedFiles, rejectedFiles) => {
+      // Handle rejected files (too large, wrong type, etc.)
+      if (rejectedFiles.length > 0) {
+        const rejection = rejectedFiles[0];
+        if (rejection.file.size > MAX_FILE_SIZE) {
+          setImageError('Image too large. Maximum size is 3MB.');
+        } else {
+          setImageError('Invalid file type. Please upload an image.');
+        }
+        return;
+      }
+      
+      setImageError(null);
       const file = acceptedFiles[0];
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      
+      // Create a preview URL
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
     },
   });
   
@@ -35,7 +55,12 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     onSendMessage(message, imageFile || undefined);
     setMessage('');
     setImageFile(null);
-    setImagePreview(null);
+    
+    // Revoke the object URL to avoid memory leaks
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
     
     // Focus input after sending
     setTimeout(() => {
@@ -55,10 +80,16 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setImageError(null);
   };
   
   return (
     <div className="space-y-2">
+      {/* Image error message */}
+      {imageError && (
+        <div className="text-red-500 text-sm">{imageError}</div>
+      )}
+      
       {/* Image preview */}
       {imagePreview && (
         <div className="relative inline-block">
