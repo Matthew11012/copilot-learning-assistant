@@ -22,7 +22,8 @@ export interface User {
     chatId: string;
     role: MessageRole;
     content: string;
-    imageUrl?: string; // Optional for messages with images
+    imageUrl?: string;
+    recommendations?: Material[];
     createdAt: Date;
   }
   
