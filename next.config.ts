@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
       'cdn-icons-png.flaticon.com',
       'fake-image-url.com'  // For our dummy image URLs
     ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',  // This allows all external domains
+      }
+    ],
   },
 };
 
