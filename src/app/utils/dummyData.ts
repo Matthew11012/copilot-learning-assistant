@@ -133,20 +133,53 @@ export const dummyMessages: Message[] = [
 
 // Utility functions for working with dummy data
 
-// Search materials based on query
 export function searchDummyMaterials(query: string, limit = 4): Material[] {
   if (!query) return dummyMaterials.slice(0, limit);
   
   const lowerQuery = query.toLowerCase();
-  return dummyMaterials
-    .filter(material => 
-      material.title.toLowerCase().includes(lowerQuery) || 
-      material.summary.toLowerCase().includes(lowerQuery) ||
-      material.topic.toLowerCase().includes(lowerQuery)
-    )
+  console.log('Search query:', lowerQuery);
+  // console.log('Available materials:', dummyMaterials.map(m => ({ title: m.title, topic: m.topic })));
+  
+  // Extract keywords from the query
+  const keywords = extractKeywords(lowerQuery);
+  console.log('Extracted keywords:', keywords);
+  
+  const materials = dummyMaterials
+    .filter(material => {
+      const titleMatch = keywords.some(keyword => 
+        material.title.toLowerCase().includes(keyword)
+      );
+      const summaryMatch = keywords.some(keyword => 
+        material.summary.toLowerCase().includes(keyword)
+      );
+      const topicMatch = keywords.some(keyword => 
+        material.topic.toLowerCase().includes(keyword)
+      );
+      
+      const matches = titleMatch || summaryMatch || topicMatch;
+      // console.log(`Material "${material.title}": titleMatch=${titleMatch}, summaryMatch=${summaryMatch}, topicMatch=${topicMatch}, overall=${matches}`);
+      
+      return matches;
+    })
     .slice(0, limit);
+    
+  // console.log('Filtered materials:', materials);
+  return materials;
 }
 
+// Add this helper function to extract relevant keywords from the query
+function extractKeywords(query: string): string[] {
+  // Remove common Indonesian words that don't help with search
+  const stopWords = ['berikan', 'saya', 'materi', 'terkait', 'tentang', 'untuk', 'dengan', 'dan', 'yang', 'adalah', 'pada', 'di', 'ke', 'dari', 'dalam'];
+  
+  // Split the query into words and filter out stop words
+  const words = query.toLowerCase()
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !stopWords.includes(word));
+  
+  // Add the original query as well in case it's a compound term
+  return [...words, query.toLowerCase()];
+}
 // Create a new chat
 export function createDummyChat(userId: string | undefined, title: string): Chat {
   const newChat: Chat = {
