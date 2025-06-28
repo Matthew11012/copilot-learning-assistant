@@ -35,3 +35,79 @@ html, body {
   display: flex;
   flex-direction: column;
 }
+
+/* Math rendering styles */
+.math-display {
+  margin: 1rem 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.math-inline {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+/* Custom prose styles for dark mode compatibility */
+.prose {
+  color: inherit;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: inherit;
+}
+
+.prose strong {
+  color: inherit;
+  font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin: 0.25rem 0;
+}
+
+.prose blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+.prose code {
+  font-size: 0.875rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark .prose code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure math doesn't break in small containers */
+.katex-display {
+  margin: 1rem 0;
+}
+
+.katex {
+  font-size: 1em;
+}
+
+/* Message content specific styles */
+.message-content {
+  line-height: 1.5;
+}
+
+.message-content .prose p:last-child {
+  margin-bottom: 0;
+}

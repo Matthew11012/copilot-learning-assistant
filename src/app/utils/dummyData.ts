@@ -157,13 +157,13 @@ export function searchDummyMaterials(query: string, limit = 4): Material[] {
       );
       
       const matches = titleMatch || summaryMatch || topicMatch;
-      // console.log(`Material "${material.title}": titleMatch=${titleMatch}, summaryMatch=${summaryMatch}, topicMatch=${topicMatch}, overall=${matches}`);
+      console.log(`Material "${material.title}": titleMatch=${titleMatch}, summaryMatch=${summaryMatch}, topicMatch=${topicMatch}, overall=${matches}`);
       
       return matches;
     })
     .slice(0, limit);
     
-  // console.log('Filtered materials:', materials);
+  console.log('Filtered materials:', materials);
   return materials;
 }
 
