@@ -1,4 +1,3 @@
-// src/app/page.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -6,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Message, Material } from './types';
 import Image from 'next/image';
 
-// Component imports will go here once we create them
+// Component imports 
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
 import RecommendationsCarousel from './components/RecommendationsCarousel';
@@ -27,7 +26,26 @@ export default function Home() {
     }
   }, [chatId]);
 
-  // Function to send a message
+  // Prevent default drag behavior on the page
+  useEffect(() => {
+    const preventDefault = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('dragover', preventDefault);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragover', preventDefault);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
+  // Function to send a message with streaming
   const handleSendMessage = async (content: string, imageFile?: File) => {
     if (!content.trim() && !imageFile) return;
     
@@ -35,27 +53,12 @@ export default function Home() {
     setError(null);
     
     try {
-      // Create a new user message
-      const userMessage: Message = {
-        id: uuidv4(),
-        chatId,
-        role: 'user',
-        content,
-        createdAt: new Date()
-      };
-      
       // Process image if present
       let imageUrl = '';
       if (imageFile) {
         try {
-          // Compress the image
           const compressedImage = await compressImage(imageFile);
-          
-          // Convert to base64 for preview and API
           imageUrl = await fileToBase64(compressedImage);
-          
-          // Add the image URL to the user message
-          userMessage.imageUrl = imageUrl;
         } catch (err) {
           console.error('Error processing image:', err);
           setError('Failed to process image. Please try again with a different image.');
@@ -63,11 +66,33 @@ export default function Home() {
           return;
         }
       }
+
+      // Create and add user message
+      const userMessage: Message = {
+        id: uuidv4(),
+        chatId,
+        role: 'user',
+        content,
+        imageUrl: imageUrl || undefined,
+        createdAt: new Date()
+      };
       
-      // Add user message to state
       setMessages(prev => [...prev, userMessage]);
+
+      // Create placeholder assistant message
+      const assistantMessageId = uuidv4();
+      const assistantMessage: Message = {
+        id: assistantMessageId,
+        chatId,
+        role: 'assistant',
+        content: '',
+        recommendations: [],
+        createdAt: new Date()
+      };
       
-      // Send message to API
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Start streaming request
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -79,28 +104,88 @@ export default function Home() {
           chatId,
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to send message');
       }
-      
-      const data = await response.json();
-      
-      // Add assistant message to state
-      const assistantMessage: Message = {
-        id: uuidv4(),
-        chatId,
-        role: 'assistant',
-        content: data.answer,
-        recommendations: data.recommendations,
-        createdAt: new Date()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      let buffer = '';
+      let streamingContent = '';
+      let recommendations: Material[] = [];
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          
+          // Keep the last incomplete line in the buffer
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                switch (data.type) {
+                  case 'start':
+                    recommendations = data.recommendations || [];
+                    break;
+                    
+                  case 'content':
+                    streamingContent += data.content;
+                    // Update the assistant message with streaming content
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMessageId 
+                        ? { ...msg, content: streamingContent, recommendations }
+                        : msg
+                    ));
+                    break;
+                    
+                  case 'complete':
+                    console.log('Streaming complete');
+                    break;
+                    
+                  case 'error':
+                    console.error('Streaming error:', data.content);
+                    streamingContent = data.content;
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMessageId 
+                        ? { ...msg, content: streamingContent }
+                        : msg
+                    ));
+                    break;
+                }
+              } catch (parseError) {
+                console.error('Error parsing SSE data:', parseError);
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
       
     } catch (err) {
       console.error('Error sending message:', err);
       setError('Failed to send message. Please try again.');
+      
+      // Update the assistant message with error
+      setMessages(prev => prev.map(msg => 
+        msg.role === 'assistant' && msg.content === ''
+          ? { ...msg, content: 'Sorry, I encountered an error. Please try again.' }
+          : msg
+      ));
     } finally {
       setIsLoading(false);
     }

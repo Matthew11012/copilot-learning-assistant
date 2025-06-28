@@ -36,7 +36,7 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
             </h3>
           ),
           p: ({ children }) => (
-            <p className="mb-4 text-gray-100 leading-relaxed text-lg">
+            <p className="mb-2 text-gray-100 leading-relaxed text-lg">
               {children}
             </p>
           ),
