@@ -20,7 +20,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/aljabar-linear-vektor',
     type: 'video',
     topic: 'aljabar linear',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Aljabar+Linear',
+    thumbnailUrl: '/images/math.jpg',
     level: 'Beginner',
     createdAt: new Date('2023-01-15')
   },
@@ -31,7 +31,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/transformasi-linear',
     type: 'article',
     topic: 'aljabar linear',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Transformasi+Linear',
+    thumbnailUrl: '/images/math.jpg',
     level: 'Intermediate',
     createdAt: new Date('2023-02-10')
   },
@@ -42,7 +42,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/ekonomi-makro',
     type: 'video',
     topic: 'ekonomi',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Ekonomi+Makro',
+    thumbnailUrl: '/images/economics.jpg',
     level: 'Beginner',
     createdAt: new Date('2023-03-05')
   },
@@ -53,7 +53,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/mikroekonomi',
     type: 'article',
     topic: 'ekonomi',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Mikroekonomi',
+    thumbnailUrl: '/images/economics.jpg',
     level: 'Intermediate',
     createdAt: new Date('2023-04-20')
   },
@@ -64,7 +64,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/kalkulus-diferensial',
     type: 'video',
     topic: 'kalkulus',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Kalkulus',
+    thumbnailUrl: '/images/math.jpg',
     level: 'Beginner',
     createdAt: new Date('2023-05-15')
   },
@@ -75,7 +75,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/python-data-science',
     type: 'video',
     topic: 'pemrograman',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Python',
+    thumbnailUrl: '/images/programming.jpg',
     level: 'Beginner',
     createdAt: new Date('2023-06-10')
   },
@@ -86,9 +86,9 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/statistika-dasar',
     type: 'article',
     topic: 'statistika',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Statistika',
+    thumbnailUrl: '/images/statistics.jpg',
     level: 'Beginner',
-    createdAt: new Date('2023-07-05')
+    createdAt: new Date('2023-07-05') 
   },
   {
     id: '8',
@@ -97,7 +97,7 @@ export const dummyMaterials: Material[] = [
     contentUrl: 'https://example.com/fisika-mekanika',
     type: 'video',
     topic: 'fisika',
-    thumbnailUrl: 'https://via.placeholder.com/150?text=Fisika',
+    thumbnailUrl: '/images/physics.jpg',
     level: 'Intermediate',
     createdAt: new Date('2023-08-20')
   }
