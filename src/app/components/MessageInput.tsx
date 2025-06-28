@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 
@@ -15,10 +15,31 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Maximum file size (3MB)
   const MAX_FILE_SIZE = 3 * 1024 * 1024;
+  
+  // Handle file processing
+  const processFile = (file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      setImageError('Image too large. Maximum size is 3MB.');
+      return;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+      setImageError('Invalid file type. Please upload an image.');
+      return;
+    }
+    
+    setImageError(null);
+    setImageFile(file);
+    
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl);
+  };
   
   // Handle file drop
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -27,6 +48,7 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     },
     maxFiles: 1,
     maxSize: MAX_FILE_SIZE,
+    noClick: true, // Disable click to open file dialog on the dropzone
     onDrop: (acceptedFiles, rejectedFiles) => {
       if (rejectedFiles.length > 0) {
         const rejection = rejectedFiles[0];
@@ -38,14 +60,52 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
         return;
       }
       
-      setImageError(null);
-      const file = acceptedFiles[0];
-      setImageFile(file);
-      
-      const objectUrl = URL.createObjectURL(file);
-      setImagePreview(objectUrl);
+      if (acceptedFiles.length > 0) {
+        processFile(acceptedFiles[0]);
+      }
     },
+    onDragEnter: () => setIsDragOver(true),
+    onDragLeave: () => setIsDragOver(false),
+    onDropAccepted: () => setIsDragOver(false),
+    onDropRejected: () => setIsDragOver(false),
   });
+  
+  // Handle clipboard paste
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      // Only handle paste when the input is focused or the container is focused
+      if (!containerRef.current?.contains(document.activeElement)) return;
+      
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        
+        if (item.type.startsWith('image/')) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            processFile(file);
+          }
+          break;
+        }
+      }
+    };
+    
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, []);
+  
+  // Handle manual file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+    // Reset the input value so the same file can be selected again
+    e.target.value = '';
+  };
   
   // Handle message submission
   const handleSubmit = () => {
@@ -94,7 +154,11 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   };
   
   return (
-    <div className="space-y-3">
+    <div 
+      ref={containerRef}
+      className="space-y-3"
+      tabIndex={-1} // Make container focusable for paste detection
+    >
       {/* Image error message */}
       {imageError && (
         <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 rounded-lg p-2">
@@ -132,14 +196,15 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
       )}
       
       <div 
+        {...getRootProps()}
         className={`relative bg-gray-800/80 backdrop-blur-sm rounded-2xl border transition-all duration-200 ${
-          isFocused || isDragActive
+          isFocused || isDragActive || isDragOver
             ? 'border-blue-500/50 shadow-lg shadow-blue-500/10' 
             : 'border-gray-600/50'
-        } ${isDragActive ? 'bg-blue-500/5' : ''}`}
+        } ${isDragActive || isDragOver ? 'bg-blue-500/5 border-blue-400' : ''}`}
       >
         {/* Drag overlay */}
-        {isDragActive && (
+        {(isDragActive || isDragOver) && (
           <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-500/50 rounded-2xl flex items-center justify-center z-10">
             <div className="text-center">
               <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,24 +217,32 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
         
         <div className="flex items-center gap-3 p-4">
           {/* Image upload button */}
-          <div
-            {...getRootProps()}
-            className="flex-shrink-0 cursor-pointer p-2 rounded-xl hover:bg-gray-700/50 transition-colors group"
-          >
-            <input {...getInputProps()} />
-            <svg
-              className="w-5 h-5 text-gray-400 group-hover:text-gray-300 transition-colors"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex-shrink-0">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="file-upload"
+            />
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer p-2 rounded-xl hover:bg-gray-700/50 transition-colors group flex items-center justify-center"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-              />
-            </svg>
+              <svg
+                className="w-5 h-5 text-gray-400 group-hover:text-gray-300 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                />
+              </svg>
+            </label>
           </div>
           
           {/* Message input */}
@@ -180,7 +253,7 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Ask me anything about your studies..."
+            placeholder="Ask me anything about your studies... (Drag & drop images or paste from clipboard)"
             className="flex-1 bg-transparent text-white placeholder-gray-400 border-none outline-none resize-none min-h-[24px] max-h-[120px] py-0"
             rows={1}
             disabled={isLoading}
@@ -215,11 +288,14 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
             )}
           </button>
         </div>
+        
+        {/* Hidden dropzone input */}
+        <input {...getInputProps()} />
       </div>
       
       {/* Helper text */}
       <p className="text-xs text-gray-500 text-center">
-        Press Enter to send • Shift + Enter for new line • Drag & drop images
+        Press Enter to send • Shift + Enter for new line • Drag & drop images anywhere • Ctrl+V to paste images
       </p>
     </div>
   );
