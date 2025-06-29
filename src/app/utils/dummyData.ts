@@ -617,38 +617,57 @@ export function searchDummyMaterials(query: string, limit = 10): Material[] {
   return filteredMaterials;
 }
 
-// Enhanced subject keyword extraction with more subjects
+// Enhanced version with context filtering
 function extractSubjectKeywords(query: string): string[] {
   const subjectMap: { [key: string]: string[] } = {
     'kalkulus': ['kalkulus', 'calculus', 'diferensial', 'integral', 'turunan', 'limit', 'multivariabel'],
     'aljabar': ['aljabar', 'linear', 'vektor', 'matriks', 'matrix', 'algebra', 'transformasi', 'eigenvalue'],
     'ekonomi': ['ekonomi', 'economy', 'mikro', 'makro', 'perdagangan', 'pasar', 'uang', 'gdp', 'inflasi'],
     'statistika': ['statistik', 'statistic', 'probabilitas', 'probability', 'data', 'sampel', 'distribusi', 'hipotesis'],
-    'fisika': ['fisika', 'physics', 'mekanika', 'gaya', 'gerak', 'energi', 'momentum', 'kinematika', 'dinamika', 'newton', 'hukum'],
+    'fisika': ['fisika', 'physics', 'mekanika', 'gaya', 'gerak', 'energi', 'momentum', 'kinematika', 'dinamika', 'newton', 'hukum', 'einstein', 'quantum', 'relativitas', 'termodinamika', 'elektromagnetik', 'optik', 'gelombang', 'partikel', 'atom', 'nuklir', 'bose', 'kondensasi'],
     'pemrograman': ['pemrograman', 'programming', 'python', 'coding', 'code', 'script', 'koding', 'algoritma'],
     'web development': ['web', 'html', 'css', 'javascript', 'react', 'frontend', 'backend', 'website'],
-    'kimia': ['kimia', 'chemistry', 'atom', 'molekul', 'reaksi', 'organik', 'analitik', 'spektroskopi'],
+    'kimia': ['kimia', 'chemistry', 'molekul', 'reaksi', 'organik', 'analitik', 'spektroskopi'],
     'biologi': ['biologi', 'biology', 'sel', 'genetika', 'dna', 'rna', 'molekuler', 'bioteknologi', 'fotosintesis', 'respirasi', 'metabolisme', 'ekosistem', 'evolusi'],
     'psikologi': ['psikologi', 'psychology', 'perilaku', 'kognitif', 'sosial', 'klinis', 'terapi'],
     'manajemen': ['manajemen', 'management', 'bisnis', 'marketing', 'strategis', 'organisasi'],
     'bahasa': ['bahasa', 'language', 'sastra', 'grammar', 'indonesia', 'english', 'tata bahasa'],
     'sejarah': ['sejarah', 'history', 'kemerdekaan', 'dunia', 'historiografi', 'indonesia'],
-    'geografi': ['geografi', 'geography', 'fisik', 'manusia', 'iklim', 'demografi', 'sig', 'gis']
+    'geografi': ['geografi', 'geography', 'geomorfologi', 'iklim', 'demografi', 'sig', 'gis', 'peta', 'wilayah', 'regional', 'spasial', 'bentuk muka bumi', 'urbanisasi']
   };
   
   const foundSubjects: string[] = [];
+  const subjectScores: { [key: string]: number } = {};
   
-  // Check which subjects are mentioned in the query
+  // Calculate scores for each subject
   Object.entries(subjectMap).forEach(([subject, keywords]) => {
+    let score = 0;
+    const matchedKeywords: string[] = [];
+    
     keywords.forEach(keyword => {
       if (query.includes(keyword)) {
-        foundSubjects.push(subject);
-        foundSubjects.push(keyword);
+        const keywordScore = keyword.length > 6 ? 3 : keyword.length > 4 ? 2 : 1;
+        score += keywordScore;
+        matchedKeywords.push(keyword);
       }
     });
+    
+    if (score > 0) {
+      subjectScores[subject] = score;
+      foundSubjects.push(...matchedKeywords);
+    }
   });
   
-  // Remove duplicates
+  // Only include subjects with high enough scores to avoid cross-contamination
+  const highScoreSubjects = Object.entries(subjectScores)
+    .filter(([_, score]) => score >= 2) 
+    .map(([subject, _]) => subject);
+  
+  foundSubjects.push(...highScoreSubjects);
+  
+  console.log('Subject scores:', subjectScores);
+  console.log('High score subjects:', highScoreSubjects);
+  
   return [...new Set(foundSubjects)];
 }
 
@@ -705,7 +724,6 @@ export function saveDummyMessage(
   return newMessage;
 }
 
-// Get messages for a chat
 export function getDummyChatMessages(chatId: string): Message[] {
   const messages = dummyMessages
     .filter(message => message.chatId === chatId)
@@ -736,7 +754,6 @@ export function searchMaterialsWithContext(query: string, conversationHistory: a
     }
   }
   
-  // If not a contextual request, use normal search
   return searchDummyMaterials(query, limit);
 }
 
