@@ -110,39 +110,56 @@ export async function generateStreamingMultimodalResponseWithContext(
   }
 }
 
-// Helper function to build contextual prompts
 function buildContextualPrompt(currentMessage: string, materialsContext: string, conversationContext: string): string {
-  let prompt = `You are a helpful learning assistant. You help students understand academic concepts and provide educational guidance.
+  let prompt = `You are an expert AI learning assistant with deep knowledge across all academic subjects. You provide clear, structured, and comprehensive educational guidance.
 
-Instructions:
+Response Guidelines:
 - Always respond in Indonesian (Bahasa Indonesia)
-- Be educational and encouraging
-- Reference previous conversation when relevant
-- When users refer to "itu" (that), "ini" (this), or similar pronouns, understand them in context of the previous conversation
-- Provide clear explanations with examples when possible
-- When recommending materials, mention them naturally in your response
+- Use clear headings and subheadings when appropriate
+- Structure complex topics with numbered lists or bullet points
+- Provide step-by-step explanations for problems
+- Include relevant examples and analogies
+- Reference previous conversation context when relevant
+- When users use pronouns like "itu" (that), "ini" (this), understand them from conversation context
+- Be thorough but concise - explain concepts completely without being verbose
+- Use academic tone while remaining approachable
+- Format mathematical expressions clearly
+- When recommending learning materials, integrate them naturally into your explanation
+
+Response Structure:
+1. Start with a brief acknowledgment or summary
+2. Provide main explanation with clear structure
+3. Include examples or applications when relevant
+4. Reference learning materials naturally within the content
+5. End with encouraging next steps or follow-up suggestions
 
 `;
 
   // Add conversation context if available
   if (conversationContext) {
-    prompt += `${conversationContext}
+    prompt += `Previous Conversation Context:
+${conversationContext}
+
 `;
   }
 
   // Add current message
-  prompt += `${currentMessage}
+  prompt += `Current Question/Request:
+${currentMessage}
 
 `;
 
   // Add materials context if available
   if (materialsContext) {
-    prompt += `${materialsContext}
+    prompt += `Available Learning Resources:
+${materialsContext}
+
+Please reference these materials naturally within your response where relevant, explaining why each resource would be helpful for understanding the topic.
 
 `;
   }
 
-  prompt += `Please provide a helpful, educational response that maintains context from our conversation.`;
+  prompt += `Provide a well-structured, comprehensive response that demonstrates deep understanding and helps the student learn effectively. Use clear formatting with headings, lists, and examples as appropriate.`;
 
   return prompt;
 }

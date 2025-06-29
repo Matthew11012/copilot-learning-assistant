@@ -171,14 +171,13 @@ ${formattedHistory}
 Current user message:`;
 }
 
-// Keep the existing formatMaterialsForContext function
 function formatMaterialsForContext(materials: Material[]): string {
   if (materials.length === 0) return '';
   
-  return `Relevant Learning Materials:
-${materials.map((material, index) => 
-  `${index + 1}. ${material.title} (${material.level}) - ${material.summary}`
+  return `Relevant Learning Materials Available:
+${materials.map((material) => 
+  `• ${material.title} (${material.level}) - ${material.summary}`
 ).join('\n')}
 
-Based on these materials, provide a helpful, educational response that references these resources when appropriate.`;
+When discussing these materials, please reference them naturally without creating numbered lists. Explain their relevance and educational value in a conversational way.`;
 }

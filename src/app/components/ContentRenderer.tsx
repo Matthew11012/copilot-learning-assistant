@@ -12,7 +12,14 @@ interface ContentRendererProps {
   className?: string;
 }
 
+function preprocessContent(content: string): string {
+  // Remove manual numbering patterns like "1.", "2.", etc. at the start of lines
+  return content.replace(/^\d+\.\s*/gm, '• ');
+}
+
 export default function ContentRenderer({ content, className = '' }: ContentRendererProps) {
+  const processedContent = preprocessContent(content);
+  
   return (
     <div className={`prose prose-lg max-w-none text-gray-100 ${className}`}>
       <ReactMarkdown
@@ -21,68 +28,74 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
         components={{
           // Custom components for better styling
           h1: ({ children }) => (
-            <h1 className="text-3xl font-bold mb-4 text-gray-100">
+            <h1 className="text-4xl font-bold mb-4 text-gray-100">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-2xl font-semibold mb-3 text-gray-100">
+            <h2 className="text-3xl font-semibold mb-2 text-gray-100">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-xl font-semibold mb-3 text-gray-100">
+            <h3 className="text-2xl font-semibold mb-2 text-gray-100">
               {children}
             </h3>
           ),
+          h4: ({ children }) => (
+            <h4 className="text-xl font-semibold mb-1 text-gray-100">
+              {children}
+            </h4>
+          ),
           p: ({ children }) => (
-            <p className="mb-2 text-gray-100 leading-relaxed text-lg">
+            <p className="mb-3 text-gray-100 leading-relaxed text-lg">
               {children}
             </p>
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-gray-900 dark:text-white">
+            <strong className="font-semibold text-gray-100">
               {children}
             </strong>
           ),
           em: ({ children }) => (
-            <em className="italic text-gray-800 dark:text-gray-200">
+            <em className="italic text-gray-200">
               {children}
             </em>
           ),
+          // Fixed list styling with proper bullets/indentation
           ul: ({ children }) => (
-            <ul className="list-disc list-inside mb-3 space-y-1 text-gray-800 dark:text-gray-200">
+            <ul className="mb-4 space-y-1 text-gray-100 ml-6 list-disc">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal list-inside mb-3 space-y-1 text-gray-800 dark:text-gray-200">
+            <ol className="mb-4 space-y-1 text-gray-100 ml-6 list-decimal">
               {children}
             </ol>
           ),
           li: ({ children }) => (
-            <li className="mb-1 text-gray-800 dark:text-gray-200">
+            <li className="text-gray-100 leading-relaxed mb-2">
               {children}
             </li>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-700 dark:text-gray-300 mb-3">
+            <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-300 mb-3 bg-gray-800/30 py-2 rounded-r">
               {children}
             </blockquote>
           ),
           code: ({ children }) => (
-            <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
+            <code className="bg-gray-800 px-2 py-1 rounded text-sm font-mono text-blue-300">
               {children}
             </code>
           ),
           pre: ({ children }) => (
-            <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded text-sm font-mono overflow-x-auto mb-3">
+            <pre className="bg-gray-800 p-4 rounded text-sm font-mono overflow-x-auto mb-3 border border-gray-700">
               {children}
             </pre>
           ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );
