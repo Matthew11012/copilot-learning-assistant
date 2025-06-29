@@ -2,10 +2,15 @@
 
 A modern, AI-powered educational assistant built with Next.js that provides personalized learning support through intelligent conversations and curated material recommendations.
 
+## 🚀 Live Demo
+
+**Try it now:** [https://copilot-learning-assistant.vercel.app/](https://copilot-learning-assistant.vercel.app/)
+
 ![Copilot Learning Assistant](https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=for-the-badge&logo=google)
+![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success?style=for-the-badge&logo=vercel)
 
 ## 🌟 Features
 
@@ -129,6 +134,9 @@ The system includes **42 curated learning materials** across **14 subjects**:
 
 ## 🌐 Deployment
 
+### Live Production App
+The application is deployed and running at: **[https://copilot-learning-assistant.vercel.app/](https://copilot-learning-assistant.vercel.app/)**
+
 ### Vercel Deployment (Recommended)
 
 1. **Deploy to Vercel**
@@ -178,6 +186,33 @@ The application uses Google Gemini for:
 - **Material Discovery** - Find relevant learning resources
 - **Visual Learning** - Upload images for analysis
 - **Study Planning** - Personalized learning paths
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Google Gemini** for providing advanced AI capabilities
+- **Next.js Team** for the excellent React framework
+- **Tailwind CSS** for the utility-first CSS framework
+- **Vercel** for seamless deployment platform
+
+---
+
+**Built with ❤️ for education and learning**
+
+*This project was developed as a demonstration of modern web development practices combined with AI-powered educational assistance.*
 
 
 
