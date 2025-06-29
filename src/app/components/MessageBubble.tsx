@@ -53,7 +53,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                   // For user messages, simple text display
                   <div className="whitespace-pre-wrap text-base sm:text-lg leading-relaxed">
                     {message.content.split('\n').map((line, i) => (
-                      <p key={i} className={i > 0 ? 'mt-3' : ''}>
+                      <p key={i} className={`text-base${i > 0 ? 'mt-3' : ''}`}>
                         {line}
                       </p>
                     ))}

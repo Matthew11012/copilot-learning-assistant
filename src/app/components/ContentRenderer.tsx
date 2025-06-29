@@ -13,8 +13,22 @@ interface ContentRendererProps {
 }
 
 function preprocessContent(content: string): string {
-  // Remove manual numbering patterns like "1.", "2.", etc. at the start of lines
-  return content.replace(/^\d+\.\s*/gm, '• ');
+  let processedContent = content;
+  
+  // Convert numbered lists to markdown format
+  processedContent = processedContent.replace(/^\d+\.\s*/gm, '- ');
+  
+  // Convert manual bullet points (•) to markdown format
+  processedContent = processedContent.replace(/^•\s*/gm, '- ');
+  
+  // Convert other common bullet characters to markdown format
+  processedContent = processedContent.replace(/^[‣▶▸►]\s*/gm, '- ');
+  
+  // Handle nested bullet points with proper indentation
+  processedContent = processedContent.replace(/^(\s+)•\s*/gm, '$1- ');
+  processedContent = processedContent.replace(/^(\s+)[‣▶▸►]\s*/gm, '$1- ');
+  
+  return processedContent;
 }
 
 export default function ContentRenderer({ content, className = '' }: ContentRendererProps) {
@@ -64,17 +78,17 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
           ),
           // Fixed list styling with proper bullets/indentation
           ul: ({ children }) => (
-            <ul className="mb-4 space-y-1 text-gray-100 ml-6 list-disc">
+            <ul className="mb-4 space-y-2 text-gray-100 ml-4 list-disc marker:text-gray-300">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="mb-4 space-y-1 text-gray-100 ml-6 list-decimal">
+            <ol className="mb-4 space-y-2 text-gray-100 ml-4 list-decimal marker:text-gray-300">
               {children}
             </ol>
           ),
           li: ({ children }) => (
-            <li className="text-gray-100 leading-relaxed mb-2">
+            <li className="text-gray-100 leading-relaxed pl-2">
               {children}
             </li>
           ),
