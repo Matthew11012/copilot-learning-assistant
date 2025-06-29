@@ -28,17 +28,17 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
         components={{
           // Custom components for better styling
           h1: ({ children }) => (
-            <h1 className="text-4xl font-bold mb-4 text-gray-100">
+            <h1 className="text-3xl font-bold mb-4 text-gray-100">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-3xl font-semibold mb-2 text-gray-100">
+            <h2 className="text-2xl font-semibold mb-2 text-gray-100">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-2xl font-semibold mb-2 text-gray-100">
+            <h3 className="text-xl font-semibold mb-2 text-gray-100">
               {children}
             </h3>
           ),
@@ -48,7 +48,7 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
             </h4>
           ),
           p: ({ children }) => (
-            <p className="mb-3 text-gray-100 leading-relaxed text-lg">
+            <p className="mb-3 text-gray-100 leading-relaxed text-base">
               {children}
             </p>
           ),
