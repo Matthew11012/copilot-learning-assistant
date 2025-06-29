@@ -1,14 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, Material } from './types';
-import Image from 'next/image';
 
 // Component imports 
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
-import RecommendationsCarousel from './components/RecommendationsCarousel';
 import { compressImage, fileToBase64 } from './utils/imageProcessing';
 
 export default function Home() {
@@ -234,7 +232,7 @@ export default function Home() {
                   Welcome to Your Learning Journey
                 </h2>
                 <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                  Ask me anything about your studies and I'll provide personalized explanations with curated learning materials to help you master any subject.
+                  Ask me anything about your studies and I&apos;ll provide personalized explanations with curated learning materials to help you master any subject.
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">

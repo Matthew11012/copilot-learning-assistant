@@ -95,7 +95,7 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
-  }, []);
+  });
   
   // Handle manual file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

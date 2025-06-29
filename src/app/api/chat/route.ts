@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import { generateTextResponse, generateMultimodalResponse } from '../../utils/gemini';
-import { searchDummyMaterials, saveDummyMessage, createDummyChat } from '../../utils/dummyData';
+import { searchDummyMaterials, saveDummyMessage } from '../../utils/dummyData';
 import { v4 as uuidv4 } from 'uuid';
 import { Material } from '../../types';
 
