@@ -204,7 +204,7 @@ export default function Home() {
               </div>
               <div>
                 <h1 className="text-xl font-semibold">Copilot Learning Assistant</h1>
-                <p className="text-sm text-gray-400">Your AI-powered learning companion</p>
+                <p className="text-sm text-gray-400">Teman belajar AI yang siap membantu Anda</p>
               </div>
             </div>
             
@@ -230,28 +230,28 @@ export default function Home() {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  Welcome to Your Learning Journey
+                  Selamat datang di Perjalanan Belajar Anda
                 </h2>
                 <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                  Ask me anything about your studies and I&apos;ll provide personalized explanations with curated learning materials to help you master any subject.
+                  Tanya saya apa saja tentang pelajaran Anda dan saya akan memberikan penjelasan yang personal dengan materi belajar yang relevan untuk membantu Anda menguasai setiap pelajaran.
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">
                   <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-                    <h3 className="font-semibold text-blue-400 mb-2">📚 Study Help</h3>
-                    <p className="text-sm text-gray-300">Get explanations for complex concepts</p>
+                    <h3 className="font-semibold text-blue-400 mb-2">📚 Bantuan Belajar</h3>
+                    <p className="text-sm text-gray-300">Dapatkan penjelasan untuk konsep yang kompleks</p>
                   </div>
                   <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-                    <h3 className="font-semibold text-purple-400 mb-2">🎯 Practice Problems</h3>
-                    <p className="text-sm text-gray-300">Solve problems step by step</p>
+                    <h3 className="font-semibold text-purple-400 mb-2">🎯 Latihan Soal</h3>
+                    <p className="text-sm text-gray-300">Selesaikan soal secara bertahap</p>
                   </div>
                   <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-                    <h3 className="font-semibold text-green-400 mb-2">📖 Learning Materials</h3>
-                    <p className="text-sm text-gray-300">Discover curated resources</p>
+                    <h3 className="font-semibold text-green-400 mb-2">📖 Materi Belajar</h3>
+                    <p className="text-sm text-gray-300">Temukan sumber belajar yang relevan</p>
                   </div>
                   <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-                    <h3 className="font-semibold text-orange-400 mb-2">🖼️ Visual Learning</h3>
-                    <p className="text-sm text-gray-300">Upload images for analysis</p>
+                    <h3 className="font-semibold text-orange-400 mb-2">🖼️ Belajar Visual</h3>
+                    <p className="text-sm text-gray-300">Unggah gambar untuk analisis</p>
                   </div>
                 </div>
               </div>

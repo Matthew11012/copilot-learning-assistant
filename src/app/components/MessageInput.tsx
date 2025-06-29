@@ -253,7 +253,7 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Ask me anything about your studies... (Drag & drop images or paste from clipboard)"
+            placeholder="Tanya saya apa saja tentang pelajaran Anda... (Drag & drop gambar atau tempel dari clipboard)"
             className="flex-1 bg-transparent text-white placeholder-gray-400 border-none outline-none resize-none min-h-[24px] max-h-[120px] py-0"
             rows={1}
             disabled={isLoading}
@@ -295,7 +295,7 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
       
       {/* Helper text */}
       <p className="text-xs text-gray-500 text-center">
-        Press Enter to send • Shift + Enter for new line • Drag & drop images anywhere • Ctrl+V to paste images
+        Tekan Enter untuk mengirim • Shift + Enter untuk baris baru • Drag & drop gambar di mana saja • Ctrl+V untuk menempel gambar
       </p>
     </div>
   );
