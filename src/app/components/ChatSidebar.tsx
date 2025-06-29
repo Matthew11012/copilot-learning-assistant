@@ -38,7 +38,7 @@ export default function ChatSidebar({ isOpen, onClose }: ChatSidebarProps) {
     }
   };
 
-  const handleEditTitle = (e: React.MouseEvent, chat: any) => {
+  const handleEditTitle = (e: React.MouseEvent, chat: { id: string; title: string }) => {
     e.stopPropagation();
     setEditingChatId(chat.id);
     setEditTitle(chat.title);

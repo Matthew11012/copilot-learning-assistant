@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Chat, Message } from '../types';
+import { Chat, Message, Material, MessageRole } from '../types';
 
 interface ChatContextType {
   chats: Chat[];
@@ -44,7 +44,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
     if (savedChats) {
       const parsedChats = JSON.parse(savedChats);
       // Convert date strings back to Date objects
-      const chatsWithDates = parsedChats.map((chat: any) => ({
+      const chatsWithDates = parsedChats.map((chat: { id: string; title: string; createdAt: string }) => ({
         ...chat,
         createdAt: new Date(chat.createdAt)
       }));
@@ -55,8 +55,17 @@ export function ChatProvider({ children }: ChatProviderProps) {
       const parsedMessages = JSON.parse(savedMessages);
       // Convert date strings back to Date objects
       const messagesWithDates: { [chatId: string]: Message[] } = {};
-      Object.entries(parsedMessages).forEach(([chatId, messages]: [string, any]) => {
-        messagesWithDates[chatId] = messages.map((msg: any) => ({
+      Object.entries(parsedMessages).forEach(([chatId, messages]) => {
+        const messageArray = messages as { 
+          id: string; 
+          chatId: string; 
+          role: MessageRole; 
+          content: string; 
+          imageUrl?: string; 
+          recommendations: Material[]; 
+          createdAt: string 
+        }[];
+        messagesWithDates[chatId] = messageArray.map((msg) => ({
           ...msg,
           createdAt: new Date(msg.createdAt)
         }));

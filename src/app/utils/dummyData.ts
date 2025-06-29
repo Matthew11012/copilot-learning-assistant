@@ -660,8 +660,8 @@ function extractSubjectKeywords(query: string): string[] {
   
   // Only include subjects with high enough scores to avoid cross-contamination
   const highScoreSubjects = Object.entries(subjectScores)
-    .filter(([_, score]) => score >= 2) 
-    .map(([subject, _]) => subject);
+    .filter(([, score]) => score >= 2) 
+    .map(([subject]) => subject);
   
   foundSubjects.push(...highScoreSubjects);
   
@@ -734,7 +734,7 @@ export function getDummyChatMessages(chatId: string): Message[] {
 }
 
 
-export function searchMaterialsWithContext(query: string, conversationHistory: any[], limit = 10): Material[] {
+export function searchMaterialsWithContext(query: string, conversationHistory: Message[], limit = 10): Material[] {
   console.log('🔍 Searching materials with context for query:', query);
   
   const lowerQuery = query.toLowerCase();
@@ -781,7 +781,7 @@ function isRequestingMaterialsAboutPreviousTopic(query: string): boolean {
 }
 
 // Helper function to find the last substantial query from conversation
-function findLastSubstantiveQuery(conversationHistory: any[]): string | null {
+function findLastSubstantiveQuery(conversationHistory: Message[]): string | null {
   // Look through conversation history in reverse order
   for (let i = conversationHistory.length - 1; i >= 0; i--) {
     const message = conversationHistory[i];
@@ -798,5 +798,116 @@ function findLastSubstantiveQuery(conversationHistory: any[]): string | null {
   }
   
   return null;
-} 
- 
+}
+
+export const searchMaterials = (query: string, context: string[] = []): Material[] => {
+  const normalizedQuery = query.toLowerCase();
+  const normalizedContext = context.map(c => c.toLowerCase());
+  
+  // Subject-specific keywords to prevent cross-contamination
+  const subjectKeywords: { [key: string]: string[] } = {
+    matematika: ['matematika', 'math', 'kalkulus', 'calculus', 'aljabar', 'algebra', 'trigonometri', 'trigonometry', 'geometri', 'geometry', 'statistik', 'statistics', 'probabilitas', 'probability'],
+    fisika: ['fisika', 'physics', 'mekanika', 'mechanics', 'termodinamika', 'thermodynamics', 'elektromagnetik', 'electromagnetic', 'quantum', 'kuantum', 'relativitas', 'relativity', 'optik', 'optics'],
+    kimia: ['kimia', 'chemistry', 'organik', 'organic', 'anorganik', 'inorganic', 'molekul', 'molecule', 'atom', 'reaksi', 'reaction', 'senyawa', 'compound'],
+    biologi: ['biologi', 'biology', 'sel', 'cell', 'genetika', 'genetics', 'evolusi', 'evolution', 'ekologi', 'ecology', 'anatomi', 'anatomy'],
+    ekonomi: ['ekonomi', 'economics', 'ekonomi mikro', 'microeconomics', 'ekonomi makro', 'macroeconomics', 'pasar', 'market', 'inflasi', 'inflation'],
+    programming: ['programming', 'pemrograman', 'koding', 'coding', 'algoritma', 'algorithm', 'struktur data', 'data structure', 'javascript', 'python', 'java'],
+    geografi: ['geografi', 'geography', 'bumi', 'earth', 'planet', 'benua', 'continent', 'negara', 'country'],
+    sejarah: ['sejarah', 'history', 'perang', 'war', 'revolusi', 'revolution', 'kerajaan', 'kingdom'],
+    bahasa: ['bahasa', 'language', 'grammar', 'tata bahasa', 'sastra', 'literature'],
+    seni: ['seni', 'art', 'lukisan', 'painting', 'musik', 'music', 'tari', 'dance'],
+    filsafat: ['filsafat', 'philosophy', 'etika', 'ethics', 'logika', 'logic'],
+    psikologi: ['psikologi', 'psychology', 'mental', 'kognitif', 'cognitive', 'perilaku', 'behavior'],
+    sosiologi: ['sosiologi', 'sociology', 'masyarakat', 'society', 'sosial', 'social'],
+    teknologi: ['teknologi', 'technology', 'komputer', 'computer', 'internet', 'digital']
+  };
+
+  // Find relevant subject based on query and context
+  const relevantSubjects = new Set<string>();
+  
+  // Check query against subject keywords
+  Object.entries(subjectKeywords).forEach(([subject, keywords]) => {
+    if (keywords.some(keyword => normalizedQuery.includes(keyword))) {
+      relevantSubjects.add(subject);
+    }
+  });
+  
+  // Check context against subject keywords  
+  normalizedContext.forEach(contextItem => {
+    Object.entries(subjectKeywords).forEach(([subject, keywords]) => {
+      if (keywords.some(keyword => contextItem.includes(keyword))) {
+        relevantSubjects.add(subject);
+      }
+    });
+  });
+
+  // If no specific subject found, search broadly but carefully
+  let candidates = dummyMaterials;
+  
+  if (relevantSubjects.size > 0) {
+    // Filter by relevant subjects first
+    candidates = dummyMaterials.filter(material => {
+      const materialTopic = material.topic.toLowerCase();
+      return Array.from(relevantSubjects).some(subject => {
+        const keywords = subjectKeywords[subject] || [];
+        return keywords.some(keyword => materialTopic.includes(keyword));
+      });
+    });
+  }
+
+  // Score materials based on relevance
+  const scoredMaterials = candidates.map(material => {
+    let score = 0;
+    const title = material.title.toLowerCase();
+    const summary = material.summary.toLowerCase();
+    const topic = material.topic.toLowerCase();
+    
+    // Direct keyword matches in title (highest weight)
+    const queryWords = normalizedQuery.split(' ').filter(word => word.length > 2);
+    queryWords.forEach(word => {
+      if (title.includes(word)) score += 10;
+      if (summary.includes(word)) score += 5;
+      if (topic.includes(word)) score += 3;
+    });
+    
+    // Context relevance
+    normalizedContext.forEach(contextItem => {
+      const contextWords = contextItem.split(' ').filter(word => word.length > 2);
+      contextWords.forEach(word => {
+        if (title.includes(word)) score += 3;
+        if (summary.includes(word)) score += 2;
+      });
+    });
+    
+    // Boost score if material is in relevant subject
+    if (relevantSubjects.size > 0) {
+      const materialSubject = Array.from(relevantSubjects).find(subject => {
+        const keywords = subjectKeywords[subject] || [];
+        return keywords.some(keyword => topic.includes(keyword));
+      });
+      if (materialSubject) score += 5;
+    }
+    
+    return { material, score };
+  });
+
+  // Return top materials, minimum score threshold of 2
+  return scoredMaterials
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6)
+    .map(item => item.material);
+};
+
+export const extractKeywords = (text: string): string[] => {
+  const stopWords = ['dan', 'atau', 'yang', 'dari', 'untuk', 'dengan', 'pada', 'di', 'ke', 'dalam', 'tentang', 'bagaimana', 'mengapa', 'apa', 'siapa', 'dimana', 'kapan'];
+  
+  return text.toLowerCase()
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !stopWords.includes(word))
+    .slice(0, 5); // Limit to top 5 keywords
+};
+
+export const generateRecommendations = (query: string, context: string[]): Material[] => {
+  return searchMaterials(query, context);
+}; 

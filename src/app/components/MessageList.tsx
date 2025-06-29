@@ -2,7 +2,7 @@
 
 import { Message } from '../types';
 import MessageBubble from './MessageBubble';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 
 interface MessageListProps {
   messages: Message[];
@@ -13,6 +13,12 @@ export default function MessageList({ messages }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isUserScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Memoize the content hash for dependency tracking
+  const contentHash = useMemo(() => 
+    messages.map(m => m.content).join(''), 
+    [messages]
+  );
 
   // Function to scroll to bottom
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
@@ -40,7 +46,7 @@ export default function MessageList({ messages }: MessageListProps) {
     if (lastMessage?.role === 'assistant') {
       scrollToBottom('smooth');
     }
-  }, [messages.map(m => m.content).join('')]);
+  }, [contentHash, messages]);
 
   // Detect user scrolling
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { searchDummyMaterials, saveDummyMessage, getDummyChatMessages, searchMaterialsWithContext } from '../../utils/dummyData';
+import { saveDummyMessage, getDummyChatMessages, searchMaterialsWithContext } from '../../utils/dummyData';
 import { v4 as uuidv4 } from 'uuid';
-import { Material } from '../../types';
+import { Material, Message } from '../../types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -154,7 +154,7 @@ async function generateStreamingMultimodalResponse(
 }
 
 // Helper function to format conversation history for context
-function formatConversationHistory(messages: any[]): string {
+function formatConversationHistory(messages: Message[]): string {
   if (messages.length === 0) return '';
   
   // Get the last 6 messages (3 exchanges) to avoid token limits
