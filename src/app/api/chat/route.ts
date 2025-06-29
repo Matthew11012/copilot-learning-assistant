@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { searchDummyMaterials, saveDummyMessage } from '../../utils/dummyData';
+import { searchDummyMaterials, saveDummyMessage, getDummyChatMessages, searchMaterialsWithContext } from '../../utils/dummyData';
 import { v4 as uuidv4 } from 'uuid';
 import { Material } from '../../types';
 
@@ -17,14 +17,21 @@ export async function POST(request: NextRequest) {
     // Use existing chat or create a new one
     const currentChatId = chatId || uuidv4();
     
+    // Get conversation history for context
+    const conversationHistory = getDummyChatMessages(currentChatId);
+    console.log('📜 Conversation history:', conversationHistory.length, 'messages');
+    
     // Save user message with image if present
     saveDummyMessage(currentChatId, 'user', message, imageUrl);
 
-    // Search for relevant learning materials based on user query
-    const relevantMaterials = searchDummyMaterials(message, 10);
+    // Enhanced material search that considers conversation context
+    const relevantMaterials = searchMaterialsWithContext(message, conversationHistory, 10);
     
     // Format materials for context
     const materialsContext = formatMaterialsForContext(relevantMaterials);
+    
+    // Format conversation history for context
+    const conversationContext = formatConversationHistory(conversationHistory);
 
     // Create a readable stream for the response
     const stream = new ReadableStream({
@@ -40,11 +47,11 @@ export async function POST(request: NextRequest) {
           };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(initialData)}\n\n`));
           
-          // Generate streaming response
+          // Generate streaming response with conversation context
           if (imageUrl) {
-            await generateStreamingMultimodalResponse(message, imageUrl, materialsContext, controller, encoder);
+            await generateStreamingMultimodalResponse(message, imageUrl, materialsContext, conversationContext, currentChatId, controller, encoder);
           } else {
-            await generateStreamingTextResponse(message, materialsContext, controller, encoder);
+            await generateStreamingTextResponse(message, materialsContext, conversationContext, currentChatId, controller, encoder);
           }
           
           // Send completion signal
@@ -84,25 +91,28 @@ export async function POST(request: NextRequest) {
 // Streaming text response function
 async function generateStreamingTextResponse(
   prompt: string, 
-  context: string, 
+  materialsContext: string,
+  conversationContext: string,
+  chatId: string,
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder
 ) {
   try {
-    // Import the streaming function from gemini utils
-    const { generateStreamingTextResponse } = await import('../../utils/gemini');
+    const { generateStreamingTextResponseWithContext } = await import('../../utils/gemini');
     
     let fullResponse = '';
     
-    await generateStreamingTextResponse(prompt, context, (chunk: string) => {
+    await generateStreamingTextResponseWithContext(prompt, materialsContext, conversationContext, (chunk: string) => {
       fullResponse += chunk;
       const data = { type: 'content', content: chunk };
       controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
     });
     
-    // Save the complete response
-    const currentChatId = ''; // You'll need to pass this through or get it from context
-    saveDummyMessage(currentChatId, 'assistant', fullResponse);
+    // Get the materials that were sent in the initial data
+    const relevantMaterials = searchMaterialsWithContext(prompt, getDummyChatMessages(chatId), 10);
+    
+    // Save the complete response WITH recommendations
+    saveDummyMessage(chatId, 'assistant', fullResponse, undefined, relevantMaterials);
     
   } catch (error) {
     console.error('Error in streaming text response:', error);
@@ -110,29 +120,32 @@ async function generateStreamingTextResponse(
   }
 }
 
-// Streaming multimodal response function
+// Updated streaming multimodal response function with conversation context
 async function generateStreamingMultimodalResponse(
   prompt: string,
   imageUrl: string,
-  context: string,
+  materialsContext: string,
+  conversationContext: string,
+  chatId: string,
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder
 ) {
   try {
-    // Import the streaming function from gemini utils
-    const { generateStreamingMultimodalResponse } = await import('../../utils/gemini');
+    const { generateStreamingMultimodalResponseWithContext } = await import('../../utils/gemini');
     
     let fullResponse = '';
     
-    await generateStreamingMultimodalResponse(prompt, imageUrl, context, (chunk: string) => {
+    await generateStreamingMultimodalResponseWithContext(prompt, imageUrl, materialsContext, conversationContext, (chunk: string) => {
       fullResponse += chunk;
       const data = { type: 'content', content: chunk };
       controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
     });
     
-    // Save the complete response
-    const currentChatId = ''; // You'll need to pass this through or get it from context
-    saveDummyMessage(currentChatId, 'assistant', fullResponse);
+    // Get the materials that were sent in the initial data
+    const relevantMaterials = searchMaterialsWithContext(prompt, getDummyChatMessages(chatId), 10);
+    
+    // Save the complete response WITH recommendations
+    saveDummyMessage(chatId, 'assistant', fullResponse, imageUrl, relevantMaterials);
     
   } catch (error) {
     console.error('Error in streaming multimodal response:', error);
@@ -140,7 +153,25 @@ async function generateStreamingMultimodalResponse(
   }
 }
 
-// Helper function to format materials for context
+// Helper function to format conversation history for context
+function formatConversationHistory(messages: any[]): string {
+  if (messages.length === 0) return '';
+  
+  // Get the last 6 messages (3 exchanges) to avoid token limits
+  const recentMessages = messages.slice(-6);
+  
+  const formattedHistory = recentMessages.map(msg => {
+    const role = msg.role === 'user' ? 'User' : 'Assistant';
+    return `${role}: ${msg.content}`;
+  }).join('\n\n');
+  
+  return `Previous conversation context:
+${formattedHistory}
+
+Current user message:`;
+}
+
+// Keep the existing formatMaterialsForContext function
 function formatMaterialsForContext(materials: Material[]): string {
   if (materials.length === 0) return '';
   

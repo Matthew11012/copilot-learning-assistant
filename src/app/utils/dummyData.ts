@@ -533,14 +533,16 @@ export const dummyMessages: Message[] = [
     chatId: '1',
     role: 'user',
     content: 'Berikan saya materi terkait aljabar linear',
-    createdAt: new Date('2023-06-01T10:00:00')
+    createdAt: new Date('2023-06-01T10:00:00'),
+    recommendations: []
   },
   {
     id: '2',
     chatId: '1',
     role: 'assistant',
     content: 'Aljabar linear adalah cabang matematika yang mempelajari vektor, ruang vektor, transformasi linear, dan sistem persamaan linear. Berikut beberapa materi yang dapat membantu Anda mempelajari aljabar linear:\n\n1. Aljabar Linear: Vektor dan Matriks - Ini adalah video pengantar yang bagus untuk memahami konsep dasar vektor dan matriks.\n\n2. Transformasi Linear dan Aplikasinya - Artikel ini membahas konsep transformasi linear yang merupakan bagian penting dalam aljabar linear.\n\nApakah ada topik spesifik dalam aljabar linear yang ingin Anda pelajari lebih dalam?',
-    createdAt: new Date('2023-06-01T10:00:30')
+    createdAt: new Date('2023-06-01T10:00:30'),
+    recommendations: []
   }
 ];
 
@@ -679,26 +681,38 @@ export function createDummyChat(userId: string | undefined, title: string): Chat
 }
 
 // Save a message
-export function saveDummyMessage(chatId: string, role: 'user' | 'assistant', content: string, imageUrl?: string, recommendations?: Material[]): Message {
+export function saveDummyMessage(
+  chatId: string, 
+  role: 'user' | 'assistant', 
+  content: string, 
+  imageUrl?: string, 
+  recommendations?: Material[]
+): Message {
   const newMessage: Message = {
     id: uuidv4(),
     chatId,
     role,
     content,
     imageUrl,
-    recommendations: [],
+    recommendations: recommendations || [],
     createdAt: new Date()
   };
   
   dummyMessages.push(newMessage);
+  
+  console.log(`💾 Saved ${role} message to chat ${chatId} with ${newMessage.recommendations.length} recommendations`);
+  
   return newMessage;
 }
 
 // Get messages for a chat
 export function getDummyChatMessages(chatId: string): Message[] {
-  return dummyMessages
+  const messages = dummyMessages
     .filter(message => message.chatId === chatId)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    
+  console.log(`📜 Retrieved ${messages.length} messages for chat ${chatId}`);
+  return messages;
 }
 
 // Simulate image upload (returns a fake URL)
@@ -710,5 +724,72 @@ export function uploadDummyImage(file: File): Promise<string> {
       resolve(`https://fake-image-url.com/${file.name}`);
     }, 500);
   });
+}
+
+export function searchMaterialsWithContext(query: string, conversationHistory: any[], limit = 10): Material[] {
+  console.log('🔍 Searching materials with context for query:', query);
+  
+  const lowerQuery = query.toLowerCase();
+  
+  // Check if this is a contextual request (asking for materials about previous topic)
+  const isContextualRequest = isRequestingMaterialsAboutPreviousTopic(lowerQuery);
+  
+  if (isContextualRequest && conversationHistory.length > 0) {
+    console.log('📚 Detected contextual material request');
+    
+    // Find the last user message that wasn't a material request
+    const lastSubstantiveQuery = findLastSubstantiveQuery(conversationHistory);
+    
+    if (lastSubstantiveQuery) {
+      console.log('🎯 Using previous query for material search:', lastSubstantiveQuery);
+      return searchDummyMaterials(lastSubstantiveQuery, limit);
+    }
+  }
+  
+  // If not a contextual request, use normal search
+  return searchDummyMaterials(query, limit);
+}
+
+// Helper function to detect if user is asking for materials about previous topic
+function isRequestingMaterialsAboutPreviousTopic(query: string): boolean {
+  const contextualPatterns = [
+    'beri saya materi tentang itu',
+    'berikan materi tentang itu',
+    'rekomen materi tentang itu',
+    'rekomendasi materi tentang itu',
+    'materi tentang itu',
+    'bahan belajar tentang itu',
+    'sumber belajar tentang itu',
+    'beri materi itu',
+    'kasih materi itu',
+    'materi untuk itu',
+    'belajar tentang itu',
+    'pelajari itu',
+    'materi terkait itu',
+    'rekomen materi materi tentang itu', // Your specific query
+    'rekomen materi tentang it' // Alternative spelling
+  ];
+  
+  return contextualPatterns.some(pattern => query.includes(pattern));
+}
+
+// Helper function to find the last substantial query from conversation
+function findLastSubstantiveQuery(conversationHistory: any[]): string | null {
+  // Look through conversation history in reverse order
+  for (let i = conversationHistory.length - 1; i >= 0; i--) {
+    const message = conversationHistory[i];
+    
+    // Skip if it's an assistant message
+    if (message.role === 'assistant') continue;
+    
+    // Skip if it's a material request
+    if (isRequestingMaterialsAboutPreviousTopic(message.content.toLowerCase())) continue;
+    
+    // This should be a substantial user query
+    console.log('🎯 Found last substantive query:', message.content);
+    return message.content;
+  }
+  
+  return null;
 } 
  

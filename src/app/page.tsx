@@ -72,6 +72,7 @@ export default function Home() {
         role: 'user',
         content,
         imageUrl: imageUrl || undefined,
+        recommendations: [],
         createdAt: new Date()
       };
       

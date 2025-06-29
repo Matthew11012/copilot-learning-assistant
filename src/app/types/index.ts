@@ -23,7 +23,7 @@ export interface User {
     role: MessageRole;
     content: string;
     imageUrl?: string;
-    recommendations?: Material[];
+    recommendations: Material[];
     createdAt: Date;
   }
   
