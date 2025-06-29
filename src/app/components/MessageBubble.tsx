@@ -50,7 +50,6 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               {/* Message content */}
               <div className="message-content">
                 {isUser ? (
-                  // For user messages, simple text display
                   <div className="whitespace-pre-wrap text-base sm:text-lg leading-relaxed">
                     {message.content.split('\n').map((line, i) => (
                       <p key={i} className={`text-base${i > 0 ? 'mt-3' : ''}`}>
@@ -59,7 +58,6 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                     ))}
                   </div>
                 ) : (
-                  // For assistant messages, use the ContentRenderer
                   <ContentRenderer content={message.content} />
                 )}
               </div>

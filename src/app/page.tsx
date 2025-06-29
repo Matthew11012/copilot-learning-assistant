@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Message, Material } from './types';
 import { useChatContext } from './contexts/ChatContext';
 
-// Component imports 
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
 import ChatSidebar from './components/ChatSidebar';
@@ -24,7 +23,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
-  // Initialize with a new chat if none exists
   useEffect(() => {
     if (!currentChatId) {
       createNewChat();
@@ -39,7 +37,6 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     
-    // Create assistant message ID outside try-catch for error handling
     const assistantMessageId = uuidv4();
     
     try {
@@ -57,7 +54,6 @@ export default function Home() {
         }
       }
 
-      // Create and add user message
       const userMessage: Message = {
         id: uuidv4(),
         chatId: currentChatId,
@@ -70,7 +66,6 @@ export default function Home() {
       
       addMessage(currentChatId, userMessage);
 
-      // Create placeholder assistant message
       const assistantMessage: Message = {
         id: assistantMessageId,
         chatId: currentChatId,
@@ -230,7 +225,7 @@ export default function Home() {
         {/* Chat Content Area */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-2 sm:px-4 lg:px-6 py-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex-1 overflow-y-auto px-2 sm:px-4 lg:px-6 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500">
             {currentMessages.length === 0 ? (
                               <div className="flex flex-col items-center justify-center h-full text-center max-w-4xl mx-auto px-4">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">

@@ -20,7 +20,6 @@ export default function MessageList({ messages }: MessageListProps) {
     [messages]
   );
 
-  // Function to scroll to bottom
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
     if (!isUserScrollingRef.current) {
       messagesEndRef.current?.scrollIntoView({ 
@@ -57,14 +56,12 @@ export default function MessageList({ messages }: MessageListProps) {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
       
-      // If user scrolls away from bottom, stop auto-scrolling
       isUserScrollingRef.current = !isNearBottom;
       
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
       
-      // Reset user scrolling flag after 2 seconds of no scrolling
       scrollTimeoutRef.current = setTimeout(() => {
         isUserScrollingRef.current = false;
       }, 2000);

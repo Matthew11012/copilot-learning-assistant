@@ -116,7 +116,7 @@ export default function ChatSidebar({ isOpen, onClose }: ChatSidebarProps) {
         </div>
 
         {/* Chat List */}
-        <div className="flex-1 overflow-y-auto p-2 min-h-0">
+        <div className="flex-1 overflow-y-auto p-2 min-h-0 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500">
           {chats.length === 0 ? (
             <div className="text-center text-gray-500 mt-8">
               <p>Belum ada chat</p>

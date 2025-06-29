@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { User, Chat, Message, Material } from '../types';
 
-// Dummy Users
 export const dummyUsers: User[] = [
   {
     id: '1',
@@ -11,7 +10,6 @@ export const dummyUsers: User[] = [
   }
 ];
 
-// Expanded Dummy Learning Materials with much more variety
 export const dummyMaterials: Material[] = [
   // MATHEMATICS - Calculus
   {
@@ -504,7 +502,6 @@ export const dummyMaterials: Material[] = [
   }
 ];
 
-// Dummy Chats
 export const dummyChats: Chat[] = [
   {
     id: '1',
@@ -526,7 +523,7 @@ export const dummyChats: Chat[] = [
   }
 ];
 
-// Dummy Messages
+
 export const dummyMessages: Message[] = [
   {
     id: '1',
@@ -556,7 +553,7 @@ export function searchDummyMaterials(query: string, limit = 10): Material[] {
   const subjectKeywords = extractSubjectKeywords(lowerQuery);
   console.log('Subject keywords found:', subjectKeywords);
   
-  // scoring system for better relevance
+  // scoring system
   const materialScores = dummyMaterials.map(material => {
     let score = 0;
     const materialText = {
@@ -601,7 +598,6 @@ export function searchDummyMaterials(query: string, limit = 10): Material[] {
     return { material, score };
   });
   
-  // Filter materials with score > 40 and sort by score
   const filteredMaterials = materialScores
     .filter(item => item.score > 40)
     .sort((a, b) => b.score - a.score)
@@ -617,7 +613,6 @@ export function searchDummyMaterials(query: string, limit = 10): Material[] {
   return filteredMaterials;
 }
 
-// Enhanced version with context filtering
 function extractSubjectKeywords(query: string): string[] {
   const subjectMap: { [key: string]: string[] } = {
     'kalkulus': ['kalkulus', 'calculus', 'diferensial', 'integral', 'turunan', 'limit', 'multivariabel'],
@@ -671,7 +666,6 @@ function extractSubjectKeywords(query: string): string[] {
   return [...new Set(foundSubjects)];
 }
 
-// Extract general keywords (with lower priority)
 function extractGeneralKeywords(query: string): string[] {
   const stopWords = [
     'berikan', 'saya', 'materi', 'terkait', 'tentang', 'untuk', 'dengan', 'dan', 
@@ -686,7 +680,6 @@ function extractGeneralKeywords(query: string): string[] {
   return words;
 }
 
-// Create a new chat
 export function createDummyChat(userId: string | undefined, title: string): Chat {
   const newChat: Chat = {
     id: uuidv4(),
@@ -699,7 +692,6 @@ export function createDummyChat(userId: string | undefined, title: string): Chat
   return newChat;
 }
 
-// Save a message
 export function saveDummyMessage(
   chatId: string, 
   role: 'user' | 'assistant', 
@@ -739,13 +731,11 @@ export function searchMaterialsWithContext(query: string, conversationHistory: M
   
   const lowerQuery = query.toLowerCase();
   
-  // Check if this is a contextual request (asking for materials about previous topic)
   const isContextualRequest = isRequestingMaterialsAboutPreviousTopic(lowerQuery);
   
   if (isContextualRequest && conversationHistory.length > 0) {
     console.log('📚 Detected contextual material request');
     
-    // Find the last user message that wasn't a material request
     const lastSubstantiveQuery = findLastSubstantiveQuery(conversationHistory);
     
     if (lastSubstantiveQuery) {
@@ -757,7 +747,6 @@ export function searchMaterialsWithContext(query: string, conversationHistory: M
   return searchDummyMaterials(query, limit);
 }
 
-// Helper function to detect if user is asking for materials about previous topic
 function isRequestingMaterialsAboutPreviousTopic(query: string): boolean {
   const contextualPatterns = [
     'beri saya materi tentang itu',
@@ -773,23 +762,20 @@ function isRequestingMaterialsAboutPreviousTopic(query: string): boolean {
     'belajar tentang itu',
     'pelajari itu',
     'materi terkait itu',
-    'rekomen materi materi tentang itu', // Your specific query
-    'rekomen materi tentang it' // Alternative spelling
+    'rekomen materi materi tentang itu', 
+    'rekomen materi tentang it' 
   ];
   
   return contextualPatterns.some(pattern => query.includes(pattern));
 }
 
-// Helper function to find the last substantial query from conversation
 function findLastSubstantiveQuery(conversationHistory: Message[]): string | null {
   // Look through conversation history in reverse order
   for (let i = conversationHistory.length - 1; i >= 0; i--) {
     const message = conversationHistory[i];
     
-    // Skip if it's an assistant message
     if (message.role === 'assistant') continue;
     
-    // Skip if it's a material request
     if (isRequestingMaterialsAboutPreviousTopic(message.content.toLowerCase())) continue;
     
     // This should be a substantial user query
@@ -804,7 +790,6 @@ export const searchMaterials = (query: string, context: string[] = []): Material
   const normalizedQuery = query.toLowerCase();
   const normalizedContext = context.map(c => c.toLowerCase());
   
-  // Subject-specific keywords to prevent cross-contamination
   const subjectKeywords: { [key: string]: string[] } = {
     matematika: ['matematika', 'math', 'kalkulus', 'calculus', 'aljabar', 'algebra', 'trigonometri', 'trigonometry', 'geometri', 'geometry', 'statistik', 'statistics', 'probabilitas', 'probability'],
     fisika: ['fisika', 'physics', 'mekanika', 'mechanics', 'termodinamika', 'thermodynamics', 'elektromagnetik', 'electromagnetic', 'quantum', 'kuantum', 'relativitas', 'relativity', 'optik', 'optics'],
@@ -822,17 +807,14 @@ export const searchMaterials = (query: string, context: string[] = []): Material
     teknologi: ['teknologi', 'technology', 'komputer', 'computer', 'internet', 'digital']
   };
 
-  // Find relevant subject based on query and context
   const relevantSubjects = new Set<string>();
   
-  // Check query against subject keywords
   Object.entries(subjectKeywords).forEach(([subject, keywords]) => {
     if (keywords.some(keyword => normalizedQuery.includes(keyword))) {
       relevantSubjects.add(subject);
     }
   });
   
-  // Check context against subject keywords  
   normalizedContext.forEach(contextItem => {
     Object.entries(subjectKeywords).forEach(([subject, keywords]) => {
       if (keywords.some(keyword => contextItem.includes(keyword))) {
@@ -841,7 +823,6 @@ export const searchMaterials = (query: string, context: string[] = []): Material
     });
   });
 
-  // If no specific subject found, search broadly but carefully
   let candidates = dummyMaterials;
   
   if (relevantSubjects.size > 0) {
@@ -891,7 +872,6 @@ export const searchMaterials = (query: string, context: string[] = []): Material
     return { material, score };
   });
 
-  // Return top materials, minimum score threshold of 2
   return scoredMaterials
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -905,7 +885,7 @@ export const extractKeywords = (text: string): string[] => {
   return text.toLowerCase()
     .split(/\s+/)
     .filter(word => word.length > 2 && !stopWords.includes(word))
-    .slice(0, 5); // Limit to top 5 keywords
+    .slice(0, 5);
 };
 
 export const generateRecommendations = (query: string, context: string[]): Material[] => {

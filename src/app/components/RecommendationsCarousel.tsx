@@ -22,7 +22,6 @@ export default function RecommendationsCarousel({ materials }: RecommendationsCa
         ))}
       </div>
       
-      {/* Custom scrollbar styles */}
       <style jsx>{`
         .scrollbar-custom::-webkit-scrollbar {
           height: 6px;

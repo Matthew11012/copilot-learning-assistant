@@ -8,7 +8,6 @@ interface RecommendationCardProps {
 }
 
 export default function RecommendationCard({ material }: RecommendationCardProps) {
-  // Get icon based on material type
   const getTypeIcon = () => {
     switch (material.type) {
       case 'video':
@@ -34,7 +33,6 @@ export default function RecommendationCard({ material }: RecommendationCardProps
     }
   };
 
-  // Get level badge color
   const getLevelColor = () => {
     switch (material.level) {
       case 'Beginner':

@@ -44,7 +44,6 @@ export async function generateStreamingTextResponseWithContext(
   onChunk: (chunk: string) => void
 ) {
   try {
-    // Construct a comprehensive prompt with conversation context
     const fullPrompt = buildContextualPrompt(prompt, materialsContext, conversationContext);
     
     console.log('Sending contextual prompt to Gemini...');
@@ -72,7 +71,6 @@ export async function generateStreamingMultimodalResponseWithContext(
   onChunk: (chunk: string) => void
 ) {
   try {
-    // Construct a comprehensive prompt with conversation context
     const fullPrompt = buildContextualPrompt(prompt, materialsContext, conversationContext);
 
     console.log('Sending contextual multimodal prompt to Gemini...');
@@ -81,7 +79,7 @@ export async function generateStreamingMultimodalResponseWithContext(
     const imageParts = [
       {
         inlineData: {
-          data: imageUrl.split(',')[1], // Remove the data:image/jpeg;base64, part
+          data: imageUrl.split(',')[1], 
           mimeType: 'image/jpeg',
         },
       },
@@ -135,7 +133,6 @@ Response Structure:
 
 `;
 
-  // Add conversation context if available
   if (conversationContext) {
     prompt += `Previous Conversation Context:
 ${conversationContext}
@@ -143,13 +140,11 @@ ${conversationContext}
 `;
   }
 
-  // Add current message
   prompt += `Current Question/Request:
 ${currentMessage}
 
 `;
 
-  // Add materials context if available
   if (materialsContext) {
     prompt += `Available Learning Resources:
 ${materialsContext}

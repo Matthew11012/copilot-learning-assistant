@@ -76,7 +76,6 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
               {children}
             </em>
           ),
-          // Fixed list styling with proper bullets/indentation
           ul: ({ children }) => (
             <ul className="mb-4 space-y-2 text-gray-100 ml-4 list-disc marker:text-gray-300">
               {children}

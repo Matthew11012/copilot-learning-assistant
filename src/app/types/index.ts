@@ -1,4 +1,3 @@
-// Types for User
 export interface User {
     id: string;
     email: string;
@@ -6,15 +5,13 @@ export interface User {
     createdAt: Date;
   }
   
-  // Types for Chat
   export interface Chat {
     id: string;
-    userId?: string; // Optional for anonymous users
+    userId?: string; 
     title: string;
     createdAt: Date;
   }
   
-  // Types for Message
   export type MessageRole = 'user' | 'assistant';
   
   export interface Message {
@@ -27,7 +24,6 @@ export interface User {
     createdAt: Date;
   }
   
-  // Types for Learning Materials
   export type MaterialType = 'video' | 'pdf' | 'article';
   
   export interface Material {
@@ -43,7 +39,6 @@ export interface User {
   }
   
   
-  // Types for UI Components
   export interface MessageInputProps {
     onSendMessage: (message: string, imageFile?: File) => void;
     isLoading: boolean;

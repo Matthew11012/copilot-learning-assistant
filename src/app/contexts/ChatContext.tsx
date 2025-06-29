@@ -93,7 +93,6 @@ export function ChatProvider({ children }: ChatProviderProps) {
     }
   }, [currentChatId]);
 
-  // Get current messages
   const currentMessages = currentChatId ? (allMessages[currentChatId] || []) : [];
 
   const createNewChat = (title?: string): string => {
@@ -104,7 +103,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
       createdAt: new Date()
     };
 
-    setChats(prev => [newChat, ...prev]); // Add to beginning for recent-first order
+    setChats(prev => [newChat, ...prev]); 
     setCurrentChatId(newChatId);
     setAllMessages(prev => ({ ...prev, [newChatId]: [] }));
 

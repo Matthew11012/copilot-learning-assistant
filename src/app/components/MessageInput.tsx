@@ -22,7 +22,6 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
   // Maximum file size (3MB)
   const MAX_FILE_SIZE = 3 * 1024 * 1024;
   
-  // Handle file processing
   const processFile = (file: File) => {
     if (file.size > MAX_FILE_SIZE) {
       setImageError('Image too large. Maximum size is 3MB.');
@@ -48,7 +47,7 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     },
     maxFiles: 1,
     maxSize: MAX_FILE_SIZE,
-    noClick: true, // Disable click to open file dialog on the dropzone
+    noClick: true, 
     onDrop: (acceptedFiles, rejectedFiles) => {
       if (rejectedFiles.length > 0) {
         const rejection = rejectedFiles[0];
@@ -97,17 +96,14 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     return () => document.removeEventListener('paste', handlePaste);
   });
   
-  // Handle manual file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       processFile(file);
     }
-    // Reset the input value so the same file can be selected again
     e.target.value = '';
   };
   
-  // Handle message submission
   const handleSubmit = () => {
     if (isLoading || (!message.trim() && !imageFile)) return;
     
@@ -125,7 +121,6 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     }, 0);
   };
   
-  // Handle enter key press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -133,7 +128,6 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
     }
   };
   
-  // Remove image
   const handleRemoveImage = () => {
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
@@ -289,11 +283,9 @@ export default function MessageInput({ onSendMessage, isLoading }: MessageInputP
           </button>
         </div>
         
-        {/* Hidden dropzone input */}
         <input {...getInputProps()} />
       </div>
       
-      {/* Helper text */}
       <p className="text-xs text-gray-500 text-center">
         Tekan Enter untuk mengirim • Shift + Enter untuk baris baru • Drag & drop gambar di mana saja • Ctrl+V untuk menempel gambar
       </p>
