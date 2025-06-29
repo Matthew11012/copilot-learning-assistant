@@ -4,6 +4,7 @@ import { Message } from '../types';
 import Image from 'next/image';
 import ContentRenderer from './ContentRenderer';
 import RecommendationsCarousel from './RecommendationsCarousel';
+import { useState } from 'react';
 
 interface MessageBubbleProps {
   message: Message;
@@ -11,6 +12,17 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
+  };
   
   return (
     <div className={`w-full`}>
@@ -48,7 +60,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               )}
               
               {/* Message content */}
-              <div className="message-content">
+              <div className="message-content relative">
                 {isUser ? (
                   <div className="whitespace-pre-wrap text-base sm:text-lg leading-relaxed">
                     {message.content.split('\n').map((line, i) => (
@@ -58,7 +70,35 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                     ))}
                   </div>
                 ) : (
-                  <ContentRenderer content={message.content} />
+                  <>
+                    <ContentRenderer content={message.content} />
+                    {/* Copy button for assistant messages */}
+                    {message.content && (
+                      <div className="flex justify-end mt-3">
+                        <button
+                          onClick={handleCopy}
+                          className="group flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
+                          title={copyStatus === 'copied' ? 'Copied!' : 'Copy response'}
+                        >
+                          {copyStatus === 'copied' ? (
+                            <>
+                              <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span className="text-green-400">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3.5 h-3.5 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               
