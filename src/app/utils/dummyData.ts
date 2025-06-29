@@ -599,9 +599,9 @@ export function searchDummyMaterials(query: string, limit = 10): Material[] {
     return { material, score };
   });
   
-  // Filter materials with score > 0 and sort by score
+  // Filter materials with score > 40 and sort by score
   const filteredMaterials = materialScores
-    .filter(item => item.score > 0)
+    .filter(item => item.score > 40)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(item => item.material);
@@ -622,11 +622,11 @@ function extractSubjectKeywords(query: string): string[] {
     'aljabar': ['aljabar', 'linear', 'vektor', 'matriks', 'matrix', 'algebra', 'transformasi', 'eigenvalue'],
     'ekonomi': ['ekonomi', 'economy', 'mikro', 'makro', 'perdagangan', 'pasar', 'uang', 'gdp', 'inflasi'],
     'statistika': ['statistik', 'statistic', 'probabilitas', 'probability', 'data', 'sampel', 'distribusi', 'hipotesis'],
-    'fisika': ['fisika', 'physics', 'mekanika', 'gaya', 'gerak', 'energi', 'momentum', 'kinematika', 'dinamika'],
+    'fisika': ['fisika', 'physics', 'mekanika', 'gaya', 'gerak', 'energi', 'momentum', 'kinematika', 'dinamika', 'newton', 'hukum'],
     'pemrograman': ['pemrograman', 'programming', 'python', 'coding', 'code', 'script', 'koding', 'algoritma'],
     'web development': ['web', 'html', 'css', 'javascript', 'react', 'frontend', 'backend', 'website'],
     'kimia': ['kimia', 'chemistry', 'atom', 'molekul', 'reaksi', 'organik', 'analitik', 'spektroskopi'],
-    'biologi': ['biologi', 'biology', 'sel', 'genetika', 'dna', 'rna', 'molekuler', 'bioteknologi'],
+    'biologi': ['biologi', 'biology', 'sel', 'genetika', 'dna', 'rna', 'molekuler', 'bioteknologi', 'fotosintesis', 'respirasi', 'metabolisme', 'ekosistem', 'evolusi'],
     'psikologi': ['psikologi', 'psychology', 'perilaku', 'kognitif', 'sosial', 'klinis', 'terapi'],
     'manajemen': ['manajemen', 'management', 'bisnis', 'marketing', 'strategis', 'organisasi'],
     'bahasa': ['bahasa', 'language', 'sastra', 'grammar', 'indonesia', 'english', 'tata bahasa'],
