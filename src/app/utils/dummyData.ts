@@ -715,16 +715,6 @@ export function getDummyChatMessages(chatId: string): Message[] {
   return messages;
 }
 
-// Simulate image upload (returns a fake URL)
-export function uploadDummyImage(file: File): Promise<string> {
-  return new Promise((resolve) => {
-    // Simulate network delay
-    setTimeout(() => {
-      // Return a fake URL
-      resolve(`https://fake-image-url.com/${file.name}`);
-    }, 500);
-  });
-}
 
 export function searchMaterialsWithContext(query: string, conversationHistory: any[], limit = 10): Material[] {
   console.log('🔍 Searching materials with context for query:', query);

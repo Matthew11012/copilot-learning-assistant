@@ -42,11 +42,6 @@ export interface User {
     createdAt: Date;
   }
   
-  // Types for API Responses
-  export interface ChatResponse {
-    answer: string;
-    recommendations: Material[];
-  }
   
   // Types for UI Components
   export interface MessageInputProps {
