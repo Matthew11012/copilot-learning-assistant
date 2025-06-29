@@ -225,7 +225,7 @@ export default function Home() {
         {/* Chat Content Area */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-2 sm:px-4 lg:px-6 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500">
+          <div className="flex-1 overflow-y-auto px-2 sm:px-4 lg:px-6 py-6 scrollbar-thin">
             {currentMessages.length === 0 ? (
                               <div className="flex flex-col items-center justify-center h-full text-center max-w-4xl mx-auto px-4">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
