@@ -21,7 +21,7 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
   const processedContent = preprocessContent(content);
   
   return (
-    <div className={`prose prose-lg max-w-none text-gray-100 ${className}`}>
+    <div className={`prose prose-lg text-gray-100 break-words ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}

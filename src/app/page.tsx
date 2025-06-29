@@ -1,54 +1,46 @@
 'use client';
 
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, Material } from './types';
+import { useChatContext } from './contexts/ChatContext';
 
 // Component imports 
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
+import ChatSidebar from './components/ChatSidebar';
 import { compressImage, fileToBase64 } from './utils/imageProcessing';
 
 export default function Home() {
-  // State for chat
-  const [chatId, setChatId] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { 
+    currentChatId, 
+    currentMessages, 
+    createNewChat, 
+    addMessage, 
+    updateMessage 
+  } = useChatContext();
+  
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
-  // Initialize chat
+  // Initialize with a new chat if none exists
   useEffect(() => {
-    // Create a new chat session if none exists
-    if (!chatId) {
-      setChatId(uuidv4());
+    if (!currentChatId) {
+      createNewChat();
     }
-  }, [chatId]);
-
-  // Prevent default drag behavior on the page
-  useEffect(() => {
-    const preventDefault = (e: DragEvent) => {
-      e.preventDefault();
-    };
-
-    const handleDrop = (e: DragEvent) => {
-      e.preventDefault();
-    };
-
-    document.addEventListener('dragover', preventDefault);
-    document.addEventListener('drop', handleDrop);
-
-    return () => {
-      document.removeEventListener('dragover', preventDefault);
-      document.removeEventListener('drop', handleDrop);
-    };
-  }, []);
+  }, [currentChatId, createNewChat]);
 
   // Function to send a message with streaming
   const handleSendMessage = async (content: string, imageFile?: File) => {
     if (!content.trim() && !imageFile) return;
+    if (!currentChatId) return;
     
     setIsLoading(true);
     setError(null);
+    
+    // Create assistant message ID outside try-catch for error handling
+    const assistantMessageId = uuidv4();
     
     try {
       // Process image if present
@@ -68,7 +60,7 @@ export default function Home() {
       // Create and add user message
       const userMessage: Message = {
         id: uuidv4(),
-        chatId,
+        chatId: currentChatId,
         role: 'user',
         content,
         imageUrl: imageUrl || undefined,
@@ -76,20 +68,19 @@ export default function Home() {
         createdAt: new Date()
       };
       
-      setMessages(prev => [...prev, userMessage]);
+      addMessage(currentChatId, userMessage);
 
       // Create placeholder assistant message
-      const assistantMessageId = uuidv4();
       const assistantMessage: Message = {
         id: assistantMessageId,
-        chatId,
+        chatId: currentChatId,
         role: 'assistant',
         content: '',
         recommendations: [],
         createdAt: new Date()
       };
       
-      setMessages(prev => [...prev, assistantMessage]);
+      addMessage(currentChatId, assistantMessage);
 
       // Start streaming request
       const response = await fetch('/api/chat', {
@@ -100,7 +91,7 @@ export default function Home() {
         body: JSON.stringify({
           message: content,
           imageUrl,
-          chatId,
+          chatId: currentChatId,
         }),
       });
 
@@ -128,7 +119,6 @@ export default function Home() {
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
           
-          // Keep the last incomplete line in the buffer
           buffer = lines.pop() || '';
 
           for (const line of lines) {
@@ -143,12 +133,10 @@ export default function Home() {
                     
                   case 'content':
                     streamingContent += data.content;
-                    // Update the assistant message with streaming content
-                    setMessages(prev => prev.map(msg => 
-                      msg.id === assistantMessageId 
-                        ? { ...msg, content: streamingContent, recommendations }
-                        : msg
-                    ));
+                    updateMessage(currentChatId, assistantMessageId, {
+                      content: streamingContent,
+                      recommendations
+                    });
                     break;
                     
                   case 'complete':
@@ -158,11 +146,9 @@ export default function Home() {
                   case 'error':
                     console.error('Streaming error:', data.content);
                     streamingContent = data.content;
-                    setMessages(prev => prev.map(msg => 
-                      msg.id === assistantMessageId 
-                        ? { ...msg, content: streamingContent }
-                        : msg
-                    ));
+                    updateMessage(currentChatId, assistantMessageId, {
+                      content: streamingContent
+                    });
                     break;
                 }
               } catch (parseError) {
@@ -179,50 +165,73 @@ export default function Home() {
       console.error('Error sending message:', err);
       setError('Failed to send message. Please try again.');
       
-      // Update the assistant message with error
-      setMessages(prev => prev.map(msg => 
-        msg.role === 'assistant' && msg.content === ''
-          ? { ...msg, content: 'Sorry, I encountered an error. Please try again.' }
-          : msg
-      ));
+      if (currentChatId) {
+        updateMessage(currentChatId, assistantMessageId, {
+          content: 'Sorry, I encountered an error. Please try again.'
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-10 backdrop-blur-md bg-gray-900/80 border-b border-gray-700/50">
-        <div className="max-w-[80vw] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.914-1.453L5.69 19z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold">Copilot Learning Assistant</h1>
-                <p className="text-sm text-gray-400">Teman belajar AI yang siap membantu Anda</p>
-              </div>
-            </div>
-            
-            <button className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex overflow-hidden">
+      {/* Sidebar - Always visible on desktop, overlay on mobile */}
+      <div className="hidden lg:block w-80 flex-shrink-0">
+        <ChatSidebar isOpen={true} onClose={() => {}} />
+      </div>
+      
+      {/* Mobile Sidebar Overlay */}
+      <div className="lg:hidden">
+        <ChatSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col max-w-[80vw] mx-auto w-full h-[calc(100vh-80px)]">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto px-6 py-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {messages.length === 0 ? (
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+        {/* Header */}
+        <header className="flex-shrink-0 backdrop-blur-md bg-gray-900/80 border-b border-gray-700/50">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="lg:hidden p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.914-1.453L5.69 19z" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold">Asisten Belajar Copilot</h1>
+                  <p className="text-sm text-gray-400">Teman belajar AI yang siap membantu Anda</p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => createNewChat()}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg transition-all duration-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Chat Baru
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Chat Content Area */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto px-6 py-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {currentMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center max-w-4xl mx-auto">
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +245,7 @@ export default function Home() {
                   Tanya saya apa saja tentang pelajaran Anda dan saya akan memberikan penjelasan yang personal dengan materi belajar yang relevan untuk membantu Anda menguasai setiap pelajaran.
                 </p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                   <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
                     <h3 className="font-semibold text-blue-400 mb-2">📚 Bantuan Belajar</h3>
                     <p className="text-sm text-gray-300">Dapatkan penjelasan untuk konsep yang kompleks</p>
@@ -256,30 +265,30 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <MessageList messages={messages} />
+              <MessageList messages={currentMessages} />
             )}
           </div>
-        </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="mx-6 mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-red-400 text-sm">{error}</span>
+          {/* Error Display */}
+          {error && (
+            <div className="mx-6 mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-red-400 text-sm">{error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Input Area */}
+          <div className="flex-shrink-0 p-6 border-t border-gray-700/50">
+            <div className="max-w-4xl mx-auto">
+              <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
             </div>
           </div>
-        )}
-
-        {/* Input Area */}
-        <div className="p-6 backdrop-blur-sm ">
-          <div className="max-w-5xl mx-auto">
-            <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
