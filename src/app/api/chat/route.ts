@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     saveDummyMessage(currentChatId, 'user', message, imageUrl);
 
     // Search for relevant learning materials based on user query
-    const relevantMaterials = searchDummyMaterials(message, 4);
+    const relevantMaterials = searchDummyMaterials(message, 10);
     
     // Format materials for context
     const materialsContext = formatMaterialsForContext(relevantMaterials);
